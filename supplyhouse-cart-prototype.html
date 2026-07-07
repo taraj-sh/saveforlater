@@ -198,16 +198,30 @@
   .bulk-actions button[disabled]{ color:var(--border-strong); cursor:default; }
   .bulk-actions .pipe{ color:var(--border); font-weight:700; }
 
-  .scard{ position:relative; display:flex; align-items:flex-start; gap:20px;
-          padding:48px 32px 32px 32px; border-bottom:1px solid var(--border); }
+  /* Saved card — grid: [chk][thumb][info][price], Move-to-Cart under info (Figma node 66:5550) */
+  .scard{ position:relative; display:grid; align-items:start; column-gap:24px; row-gap:16px;
+          grid-template-columns:auto auto minmax(0,1fr) auto;
+          grid-template-areas:"chk thumb info price" "chk thumb move price";
+          padding:48px 32px 28px; border-bottom:1px solid var(--border); }
   .scard:last-child{ border-bottom:0; }
-  .scard .body{ flex:1; display:flex; align-items:flex-start; gap:24px; min-width:0; }
+  .scard > .chk{ grid-area:chk; align-self:center; }
+  .scard > .thumb{ grid-area:thumb; align-self:center; }
+  .scard > .pinfo{ grid-area:info; min-width:0; }
+  .scard > .sprice{ grid-area:price; }
+  .scard > .slinks{ grid-area:move; }
   .scard .pinfo .pname{ margin-bottom:4px; }
-  .slinks{ display:flex; align-items:center; gap:10px; margin-top:17px; }
+  .slinks{ display:flex; align-items:center; gap:10px; }
   .slinks button{ font-size:13px; font-weight:700; color:var(--blue); }
   .slinks button.disabled{ color:var(--border-strong); cursor:default; }
   .slinks .pipe{ color:var(--border); font-weight:700; }
   .slinks .replace{ color:var(--link); }
+  /* Tertiary action button (Figma node 64:3368): white fill, 2px blue border, 11px Maison Neue bold uppercase */
+  .slinks .movecart-btn{ display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;
+                         height:36px; padding:8px 28px; background:var(--white); border:2px solid var(--blue);
+                         border-radius:0; color:var(--blue); font-family:var(--font); font-size:11px; font-weight:700;
+                         letter-spacing:.02em; text-transform:uppercase; line-height:1; cursor:pointer;
+                         transition:background .12s ease; }
+  .slinks .movecart-btn:hover{ background:#EFF5FD; }
   .unavail-note{ font-size:12px; font-weight:700; color:var(--muted); margin-top:8px; }
   /* volume-discount treatments in the saved tray (read-only, no steppers) */
   /* Stock Up & Save — fieldset box with legends cutting the border (matches cart) */
@@ -229,7 +243,7 @@
   .bu-each b{ font-size:13px; font-weight:700; color:var(--tm-blue); }
   .bu-each .u{ font-size:11px; color:var(--text); margin-left:2px; }
   /* saved-card price/deal column */
-  .sprice{ width:240px; flex:none; text-align:right; display:flex; flex-direction:column;
+  .sprice{ align-self:start; justify-self:end; text-align:right; display:flex; flex-direction:column;
            align-items:flex-end; gap:10px; }
   .sprice .sqtyprice{ display:flex; align-items:baseline; gap:6px; }
   .sprice .sqty{ font-size:13px; font-weight:400; color:var(--text); }
@@ -293,6 +307,22 @@
   .ribbon{ background:#FFF7F0; border-bottom:1px solid #F2D9C2; color:#8a4b1f; font-size:12px;
            padding:6px 32px; text-align:center; }
 
+  /* ---- Saved-items price-change message (Figma node 66:5550) ---- */
+  .price-msg{ position:relative; display:flex; gap:22px; align-items:flex-start;
+              background:#F8E6DA; border:1px solid #F6B48D; padding:37px 22px; margin-bottom:24px; }
+  .price-msg .pm-icon{ flex:none; width:36px; height:36px; display:block; }
+  .price-msg .pm-body{ flex:1 1 0; min-width:0; padding-right:26px;
+                       font-family:var(--font); color:var(--text); font-size:16px; line-height:1.6; }
+  .price-msg .pm-body p{ margin:0; }
+  .price-msg .pm-why{ color:var(--blue); font-weight:700; text-decoration:none; }
+  .price-msg .pm-why:hover{ text-decoration:underline; }
+  .price-msg .pm-new{ font-weight:700; }
+  .price-msg .pm-close{ position:absolute; top:14px; right:16px; width:15px; height:15px; padding:0;
+                        display:inline-flex; align-items:center; justify-content:center;
+                        color:var(--muted); background:none; border:none; cursor:pointer; }
+  .price-msg .pm-close svg{ width:15px; height:15px; display:block; }
+  .price-msg .pm-close:hover{ color:var(--text); }
+
   /* ---------------- Responsive ----------------
      Breakpoints mapped to the Figma frames: 1920 / 1400 / 992 / 768 / Mobile (374).
      Base (this stylesheet, no query) = the 1400 desktop frame: 52px gutters, 340px rail. */
@@ -326,33 +356,22 @@
 
     /* saved line: same compression */
     .saved-bulk, .saved-filter{ padding-left:16px; padding-right:16px; }
-    .scard{ padding:44px 16px 20px; gap:16px; }
-    .scard .body{ gap:16px; }
-    .sprice{ width:210px; }
+    .scard{ padding:44px 16px 22px; column-gap:16px; }
   }
 
-  /* ≤768 — "768" mobile: single column, summary drops below, nav goes mobile, and the
-     product line re-stacks (price/stepper move UNDER the info → name back to one line). */
-  @media (max-width:768px){
-    /* header → mobile */
-    .utility{ padding:8px 20px; }
-    .utility .zip-wrap{ display:none; }
-    .searchbar{ flex-wrap:wrap; gap:16px; padding:12px 20px; }
-    .search-wrap{ order:3; width:100%; max-width:none; }
+  /* ≤991 — below the 992 two-column frame: single column (summary drops below the cart).
+     The product line re-stacks so the NAME keeps full width and never gets crushed.
+     Desktop nav still shows here, but the rep block is hidden so the bar fits. */
+  @media (max-width:991px){
     .rep{ display:none; }
-    .key-menu{ margin-left:auto; gap:18px; }
-    .mainnav{ padding:0 20px; gap:22px; justify-content:flex-start; }
-    .titlebar{ padding:16px 20px; }
-    .titlebar h1{ font-size:26px; }
-    .page{ padding:16px 20px 40px; }
+    .search-field{ min-width:0; }
 
     /* stack the two columns */
     .layout{ flex-direction:column; }
     .col-summary{ width:100%; position:static; order:2; }
     .col-cart{ width:100%; }
 
-    /* cart card re-stacks */
-    .group-head, .group-body{ padding-left:16px; padding-right:16px; }
+    /* cart card re-stacks: price/stepper move UNDER the info */
     .pcard{ flex-wrap:wrap; padding:16px; gap:20px; }
     .thumb{ width:64px; height:64px; }
     .pinfo{ flex-basis:calc(100% - 80px); }
@@ -361,14 +380,30 @@
     .pactions{ position:static; flex-direction:row; align-items:center; gap:16px;
                width:100%; justify-content:flex-end; margin-top:8px; }
 
-    /* saved card re-stacks */
-    .scard{ flex-wrap:wrap; padding:44px 16px 16px; align-items:flex-start; gap:16px; }
-    .scard .body{ flex-basis:100%; align-items:flex-start; }
+    /* saved card stays two-column (desktop-style) here; just tighten padding */
+    .scard{ padding:44px 16px 18px; }
     .scard .strash{ right:16px; top:14px; }
-    .sprice{ width:100%; text-align:left; align-items:flex-start; margin-top:8px;
-             flex-direction:column; }
-    .bu-box{ align-items:flex-start; text-align:left; }
     .summary{ padding:28px 20px 24px; }
+  }
+
+  /* ≤768 — "768" mobile: nav collapses to mobile, search goes full width, gutters 20 */
+  @media (max-width:768px){
+    .utility{ padding:8px 20px; }
+    .utility .zip-wrap{ display:none; }
+    .searchbar{ flex-wrap:wrap; gap:16px; padding:12px 20px; }
+    .search-wrap{ order:3; flex:1 1 100%; width:100%; max-width:none; }
+    .key-menu{ margin-left:auto; gap:18px; }
+    .mainnav{ padding:0 20px; gap:22px; justify-content:flex-start; }
+    .titlebar{ padding:16px 20px; }
+    .titlebar h1{ font-size:26px; }
+    .page{ padding:16px 20px 40px; }
+    .group-head, .group-body{ padding-left:16px; padding-right:16px; }
+
+    /* price-change message → smaller type + icon on mobile (Figma 768 / mobile) */
+    .price-msg{ gap:8px; padding:16px 12px; margin-bottom:20px; }
+    .price-msg .pm-icon{ width:24px; height:24px; }
+    .price-msg .pm-body{ font-size:14px; padding-right:22px; }
+    .price-msg .pm-close{ top:12px; right:12px; }
   }
 
   /* ≤480 — "Mobile" (≈374): tighten gutters to 16px */
@@ -380,6 +415,17 @@
     .page{ padding:16px 16px 36px; }
     .group-head, .group-body{ padding-left:16px; padding-right:16px; }
     .saved-bulk, .saved-filter{ padding-left:16px; padding-right:16px; }
+
+    /* saved card stacks on phones: info row, then price, then a full Move-to-Cart button */
+    .scard{ grid-template-columns:auto auto minmax(0,1fr);
+            grid-template-areas:"chk thumb info" "price price price" "move move move";
+            row-gap:12px; padding:40px 16px 16px; column-gap:14px; }
+    .scard > .thumb{ align-self:start; }
+    .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
+    .scard > .slinks{ justify-self:stretch; }
+    .scard > .slinks .movecart-btn{ width:100%; }
+    .scard > .slinks .replace{ align-self:flex-start; }
+    .su-box, .bu-box{ text-align:left; align-items:flex-start; }
   }
 </style>
 
@@ -493,6 +539,7 @@
 <main class="page">
   <div class="layout">
     <section class="col-cart">
+      <div id="priceMsg"></div>
       <p class="delivery-note">Your order will have multiple delivery dates</p>
       <div id="cartGroups"></div>
 
@@ -563,9 +610,9 @@ let saved = [
   { id:'s4', name:'Honeywell T6 Pro Programmable Thermostat', sku:'TH6220U2000', brand:'Honeywell', price:null, change:null, qty:1, art:'thermostat', cat:'HVAC', available:false, checked:false },
   { id:'s5', name:'1/2" x 3/8" Copper 90° Elbow', sku:'31272', brand:'Elkhart', price:1.22, was:1.85, change:null, qty:1, art:'elbow', cat:'Fittings', available:true, checked:false,
     deal:{ type:'box', savePct:14, boxQty:50, boxPrice:55.00, eachInBox:1.10, boxWas:64.75 } },
-  { id:'s6', name:'1/2" PEX-A Tubing, 100 ft Coil', sku:'PEXA12100', brand:'Uponor', price:42.00, change:null, qty:1, art:'pipe', cat:'PEX', available:true, checked:false },
-  { id:'s7', name:'ProPress Standard Jaw Set, 1/2"–1"', sku:'PPJAW1', brand:'Ridgid', price:219.00, change:null, qty:1, art:'clamp', cat:'Tools', available:true, checked:false },
-  { id:'s8', name:'24V Transformer, 40VA Foot-Mount', sku:'TRX40', brand:'Honeywell', price:28.50, change:null, qty:1, art:'thermostat', cat:'Electrical', available:true, checked:false },
+  { id:'s6', name:'1/2" PEX-A Tubing, 100 ft Coil', sku:'PEXA12100', brand:'Uponor', price:42.00, prevPrice:36.75, change:'up', qty:1, art:'pipe', cat:'PEX', available:true, checked:false },
+  { id:'s7', name:'ProPress Standard Jaw Set, 1/2"–1"', sku:'PPJAW1', brand:'Ridgid', price:219.00, prevPrice:234.00, change:'down', qty:1, art:'clamp', cat:'Tools', available:true, checked:false },
+  { id:'s8', name:'24V Transformer, 40VA Foot-Mount', sku:'TRX40', brand:'Honeywell', price:28.50, prevPrice:24.90, change:'up', qty:1, art:'thermostat', cat:'Electrical', available:true, checked:false },
   { id:'s9', name:'3/4" Brass Gate Valve, Threaded', sku:'GV34T', brand:'Matco-Norca', price:16.75, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false },
 ];
 let savedFilters = new Set();
@@ -594,6 +641,7 @@ function resetPrototype(){
   cart = JSON.parse(JSON.stringify(SEED.cart));
   saved = JSON.parse(JSON.stringify(SEED.saved));
   savedFilters.clear();
+  priceMsgDismissed = false;
   undoFn = null;
   $('toast').classList.remove('show');
   renderAll();
@@ -688,10 +736,35 @@ function dealMarkup(p){
   return '';
 }
 
+let priceMsgDismissed = false;
+function renderPriceMsg(){
+  const el = $('priceMsg');
+  if(!el) return;
+  const changed = saved.filter(s=>s.change && s.available && s.prevPrice != null);
+  if(priceMsgDismissed || changed.length === 0){ el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = '';
+  const n = changed.length;
+  const WARN = `<svg class="pm-icon" viewBox="0 0 36 36" fill="none" aria-hidden="true"><circle cx="18" cy="18" r="18" fill="#F15C02"/><path d="M18 8.5 V20.5" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/><circle cx="18" cy="26.6" r="2.15" fill="#fff"/></svg>`;
+  const X = `<svg viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1 L13 13 M13 1 L1 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+  const lines = changed.map(s=>{
+    const dir = s.change === 'down' ? 'decreased' : 'increased';
+    return `<p>${esc(s.name)} has ${dir} from ${money(s.prevPrice)} to <span class="pm-new">${money(s.price)}</span></p>`;
+  }).join('');
+  el.innerHTML = `<div class="price-msg">
+    ${WARN}
+    <div class="pm-body">
+      <p>${n} item${n>1?'s':''} in your Saved for Later list ${n>1?'have':'has'} changed price: <a class="pm-why" href="#">Why?</a></p>
+      ${lines}
+    </div>
+    <button class="pm-close" data-act="dismissPriceMsg" aria-label="Dismiss price change message">${X}</button>
+  </div>`;
+}
+
 function renderSaved(){
   $('savedCount').textContent = saved.length;
   const box = $('savedBox');
   const anyChecked = saved.some(s=>s.checked && s.available);
+  renderPriceMsg();
   if(saved.length === 0){
     box.innerHTML = `<div class="empty">Nothing saved yet. Use <b>Save for later</b> on any cart item to park it here without losing it.</div>`;
     return;
@@ -720,25 +793,21 @@ function renderSaved(){
     return `<div class="scard" data-id="${p.id}">
       <span class="chk" role="checkbox" aria-checked="${p.checked}" data-act="check" data-id="${p.id}"
             style="${checkable?'':'opacity:.4;cursor:default'}"><span class="ico">check</span></span>
-      <div class="body">
-        <div class="thumb">${ART[p.art]||''}</div>
-        <div class="pinfo">
-          <div class="pname"><a href="#">${esc(p.name)}</a></div>
-          ${metaLine(p)}
-          ${!p.available?`<div class="unavail-note">No longer available</div>`:''}
-          <div class="slinks">
-            ${p.available
-              ? `<button data-act="tocart" data-id="${p.id}">Move to Cart</button>`
-              : `<button class="disabled" disabled>Move to Cart</button>
-                 <span class="pipe">|</span>
-                 <button class="replace" data-act="replace" data-id="${p.id}">Find a replacement</button>`}
-          </div>
-        </div>
+      <div class="thumb">${ART[p.art]||''}</div>
+      <div class="pinfo">
+        <div class="pname"><a href="#">${esc(p.name)}</a></div>
+        ${metaLine(p)}
+        ${!p.available?`<div class="unavail-note">No longer available</div>`:''}
       </div>
       <div class="sprice">
         ${!p.available
           ? ``
           : `<div class="sqtyprice"><span class="sqty">Qty ${p.qty}</span><span class="pipe">|</span><span class="amt">${money(p.price)}</span><span class="unit">each</span></div>${p.deal ? dealMarkup(p) : priceChip(p)}`}
+      </div>
+      <div class="slinks">
+        ${p.available
+          ? `<button class="movecart-btn" data-act="tocart" data-id="${p.id}">Move to Cart</button>`
+          : `<button class="replace" data-act="replace" data-id="${p.id}">Find a replacement</button>`}
       </div>
       <button class="strash" data-act="sremove" data-id="${p.id}" aria-label="Remove saved item"><span class="ico">delete</span></button>
     </div>`;
@@ -850,6 +919,7 @@ document.addEventListener('click', e=>{
     case 'tocart': moveToCart(id); break;
     case 'sremove': removeSaved(id); break;
     case 'replace': toast('Opening replacement suggestions…'); break;
+    case 'dismissPriceMsg': priceMsgDismissed = true; renderPriceMsg(); break;
     case 'savedfilter': { const c=t.dataset.cat;
       if(!c) savedFilters.clear();
       else if(savedFilters.has(c)) savedFilters.delete(c);
