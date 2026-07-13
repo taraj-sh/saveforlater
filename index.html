@@ -323,6 +323,19 @@
   .price-msg .pm-close svg{ width:15px; height:15px; display:block; }
   .price-msg .pm-close:hover{ color:var(--text); }
 
+  /* Sticky mobile checkout bar — appears once the Order Summary drops below the cart (Figma screens) */
+  .checkout-bar{ position:fixed; left:0; right:0; bottom:0; z-index:55; display:none;
+                 align-items:center; justify-content:space-between; gap:16px;
+                 background:var(--white); border-top:1px solid var(--border);
+                 box-shadow:0 -3px 12px rgba(0,0,0,.10); padding:10px 20px;
+                 transform:translateY(0); transition:transform .28s ease; }
+  .checkout-bar.tucked{ transform:translateY(120%); }
+  .checkout-bar .cb-total{ display:flex; flex-direction:column; line-height:1.18; min-width:0; }
+  .checkout-bar .cb-lbl{ font-size:13px; color:var(--text); }
+  .checkout-bar .cb-was{ font-size:13px; color:var(--muted); text-decoration:line-through; }
+  .checkout-bar .cb-val{ font-size:22px; font-weight:700; color:var(--tm-blue); }
+  .checkout-bar .checkout{ width:auto; flex:none; padding:0 26px; }
+
   /* ---------------- Responsive ----------------
      Breakpoints mapped to the Figma frames: 1920 / 1400 / 992 / 768 / Mobile (374).
      Base (this stylesheet, no query) = the 1400 desktop frame: 52px gutters, 340px rail. */
@@ -365,6 +378,11 @@
   @media (max-width:991px){
     .rep{ display:none; }
     .search-field{ min-width:0; }
+
+    /* sticky checkout bar appears; proto-tools lifts above it; leave room at page end */
+    .checkout-bar{ display:flex; }
+    .proto-tools{ bottom:78px; }
+    .page{ padding-bottom:84px; }
 
     /* stack the two columns */
     .layout{ flex-direction:column; }
@@ -576,6 +594,16 @@
     </aside>
   </div>
 </main>
+
+<!-- sticky mobile checkout bar (mirrors Order Summary; hides when the summary scrolls into view) -->
+<div class="checkout-bar" id="checkoutBar">
+  <div class="cb-total">
+    <span class="cb-lbl">Total:</span>
+    <span class="cb-was" id="cbWas">$0.00</span>
+    <span class="cb-val" id="cbVal">$0.00</span>
+  </div>
+  <button class="checkout"><span class="ico">lock</span>Secure Checkout</button>
+</div>
 
 <div class="toast" id="toast"><span class="ico">check_circle</span><span id="toastMsg"></span><button id="toastUndo" style="display:none">Undo</button></div>
 <div class="proto-tools" role="group" aria-label="Prototype controls">
@@ -840,6 +868,14 @@ function renderSummary(){
   $('subVal').textContent = money(sub);
   $('taxVal').textContent = money(tax);
   $('totVal').textContent = money(sub+tax);
+  // sticky checkout bar mirrors the summary total, with the pre-savings total struck through
+  const origSub = cart.reduce((s,p)=>s+(p.was||p.price)*p.qty,0);
+  const cbVal = $('cbVal'), cbWas = $('cbWas');
+  if(cbVal) cbVal.textContent = money(sub+tax);
+  if(cbWas){
+    if(origSub > sub + 0.005){ cbWas.textContent = money(origSub*(1+TAX_RATE)); cbWas.style.display = ''; }
+    else { cbWas.style.display = 'none'; }
+  }
   $('navBadge').textContent = cart.length;
   $('navBadge').style.display = cart.length? 'flex':'none';
 }
@@ -973,4 +1009,15 @@ document.addEventListener('click', e=>{ const a=e.target.closest('a[href="#"]');
 
 renderAll();
 refreshUndo();
+
+// Tuck the sticky checkout bar once the real Order Summary scrolls into view
+(function(){
+  const bar = $('checkoutBar');
+  const summary = document.querySelector('.summary');
+  if(!bar || !summary || !('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=> bar.classList.toggle('tucked', e.isIntersecting));
+  }, { root:null, threshold:0, rootMargin:'0px 0px -72px 0px' });
+  io.observe(summary);
+})();
 </script>
