@@ -323,6 +323,20 @@
   .price-msg .pm-close svg{ width:15px; height:15px; display:block; }
   .price-msg .pm-close:hover{ color:var(--text); }
 
+  /* In-place move confirmation (replaces the row where an item was saved/moved) */
+  .movenotice{ display:flex; align-items:center; gap:12px; padding:20px 24px; overflow:hidden;
+               background:var(--white); border-bottom:1px solid var(--border); box-shadow:inset 3px 0 0 var(--blue);
+               font-family:var(--font); font-size:14px; color:var(--text); max-height:140px;
+               transition:opacity .24s ease, max-height .24s ease, padding .24s ease; }
+  .movenotice.leaving{ opacity:0; max-height:0; padding-top:0; padding-bottom:0; }
+  .movenotice .mn-ico{ flex:none; color:var(--blue); font-size:20px; }
+  .movenotice .mn-text{ flex:1; min-width:0; }
+  .movenotice .mn-name{ color:var(--blue); font-weight:700; text-decoration:none; }
+  .movenotice .mn-name:hover{ text-decoration:underline; }
+  .movenotice .mn-undo{ flex:none; background:none; border:0; cursor:pointer; padding:4px 6px;
+                        font-family:var(--font); font-size:14px; font-weight:700; color:var(--blue); }
+  .movenotice .mn-undo:hover{ text-decoration:underline; }
+
   /* Sticky mobile checkout bar — appears once the Order Summary drops below the cart (Figma screens) */
   .checkout-bar{ position:fixed; left:0; right:0; bottom:0; z-index:55; display:none;
                  align-items:center; justify-content:space-between; gap:16px;
@@ -666,6 +680,7 @@ function toast(msg, undo){
 function refreshUndo(){ const b=$('fabUndo'); if(b) b.disabled = !undoFn; }
 function doUndo(){ if(undoFn){ undoFn(); undoFn=null; } $('toast').classList.remove('show'); refreshUndo(); }
 function resetPrototype(){
+  Object.keys(noticeTimers).forEach(clearNoticeTimer);
   cart = JSON.parse(JSON.stringify(SEED.cart));
   saved = JSON.parse(JSON.stringify(SEED.saved));
   savedFilters.clear();
@@ -697,7 +712,7 @@ function renderCart(){
   cart.forEach(p => { if(!groups[p.delivery]){ groups[p.delivery]=[]; order.push(p.delivery); } groups[p.delivery].push(p); });
 
   wrap.innerHTML = order.map((date,i)=>{
-    const items = groups[date].map(p=>`
+    const items = groups[date].map(p=> p.notice ? noticeHTML(p) : `
       <div class="pcard" data-id="${p.id}">
         <div class="thumb">${ART[p.art]||''}</div>
         <div class="pinfo">
@@ -789,7 +804,8 @@ function renderPriceMsg(){
 }
 
 function renderSaved(){
-  $('savedCount').textContent = saved.length;
+  const realSaved = saved.filter(s=>!s.notice);
+  $('savedCount').textContent = realSaved.length;
   const box = $('savedBox');
   const anyChecked = saved.some(s=>s.checked && s.available);
   renderPriceMsg();
@@ -802,7 +818,7 @@ function renderSaved(){
   const counts = {};
   saved.forEach(s=>{ if(s.cat) counts[s.cat] = (counts[s.cat]||0)+1; });
   const cats = Object.keys(counts).sort((a,b)=> counts[b]-counts[a] || a.localeCompare(b));
-  const showPills = saved.length >= 6 && cats.length >= 2;
+  const showPills = realSaved.length >= 6 && cats.length >= 2;
   if(!showPills) savedFilters.clear();
   [...savedFilters].forEach(c=>{ if(!counts[c]) savedFilters.delete(c); });
 
@@ -811,12 +827,13 @@ function renderSaved(){
     `<button class="pill ${active?'active':''}" data-act="savedfilter" data-cat="${cat}"><span class="pill-label">${label}</span>${active?CHECK:''}</button>`;
   const filterRow = showPills ? `
     <div class="saved-filter">
-      ${pill('', `All (${saved.length})`, savedFilters.size===0)}
+      ${pill('', `All (${realSaved.length})`, savedFilters.size===0)}
       ${cats.map(c=>pill(c, `${c} (${counts[c]})`, savedFilters.has(c))).join('')}
     </div>` : '';
 
-  const visible = savedFilters.size ? saved.filter(s=>savedFilters.has(s.cat)) : saved;
+  const visible = savedFilters.size ? saved.filter(s=> s.notice || savedFilters.has(s.cat)) : saved;
   const rows = visible.map(p=>{
+    if(p.notice) return noticeHTML(p);
     const checkable = p.available;
     return `<div class="scard" data-id="${p.id}">
       <span class="chk" role="checkbox" aria-checked="${p.checked}" data-act="check" data-id="${p.id}"
@@ -861,23 +878,24 @@ function allChecked(){
 }
 
 function renderSummary(){
-  const count = cart.reduce((n,p)=>n+p.qty,0);
-  const sub = cart.reduce((s,p)=>s+p.price*p.qty,0);
+  const real = cart.filter(p=>!p.notice);
+  const count = real.reduce((n,p)=>n+p.qty,0);
+  const sub = real.reduce((s,p)=>s+p.price*p.qty,0);
   const tax = sub*TAX_RATE;
   $('subLbl').textContent = `Subtotal (${count} item${count===1?'':'s'})`;
   $('subVal').textContent = money(sub);
   $('taxVal').textContent = money(tax);
   $('totVal').textContent = money(sub+tax);
   // sticky checkout bar mirrors the summary total, with the pre-savings total struck through
-  const origSub = cart.reduce((s,p)=>s+(p.was||p.price)*p.qty,0);
+  const origSub = real.reduce((s,p)=>s+(p.was||p.price)*p.qty,0);
   const cbVal = $('cbVal'), cbWas = $('cbWas');
   if(cbVal) cbVal.textContent = money(sub+tax);
   if(cbWas){
     if(origSub > sub + 0.005){ cbWas.textContent = money(origSub*(1+TAX_RATE)); cbWas.style.display = ''; }
     else { cbWas.style.display = 'none'; }
   }
-  $('navBadge').textContent = cart.length;
-  $('navBadge').style.display = cart.length? 'flex':'none';
+  $('navBadge').textContent = real.length;
+  $('navBadge').style.display = real.length? 'flex':'none';
 }
 
 function renderAll(){ renderCart(); renderSaved(); renderSummary(); }
@@ -885,25 +903,58 @@ function renderAll(){ renderCart(); renderSaved(); renderSummary(); }
 /* ---------- actions ---------- */
 function findCart(id){ return cart.find(p=>p.id===id); }
 
+/* ---------- in-place move confirmation ---------- */
+const noticeTimers = {};
+function noticeHTML(n){
+  const dest = n.dir==='sfl' ? 'Saved for Later' : 'Cart';
+  return `<div class="movenotice" data-nid="${n.id}">
+    <span class="ico mn-ico">check_circle</span>
+    <span class="mn-text"><a class="mn-name" href="#">${esc(n.name)}</a> has been moved to ${dest}.</span>
+    <button class="mn-undo" type="button" data-act="undoNotice" data-nid="${n.id}">Undo</button>
+  </div>`;
+}
+function armNotice(nid){ clearNoticeTimer(nid); noticeTimers[nid] = setTimeout(()=>dismissNotice(nid), 5000); }
+function clearNoticeTimer(nid){ if(noticeTimers[nid]){ clearTimeout(noticeTimers[nid]); delete noticeTimers[nid]; } }
+function findNotice(nid){
+  let i = cart.findIndex(p=>p.notice && p.id===nid);
+  if(i>=0) return { arr:cart, i };
+  i = saved.findIndex(p=>p.notice && p.id===nid);
+  return i>=0 ? { arr:saved, i } : null;
+}
+function dismissNotice(nid){
+  clearNoticeTimer(nid);
+  const el = document.querySelector(`.movenotice[data-nid="${nid}"]`);
+  const drop = ()=>{ const loc=findNotice(nid); if(loc){ loc.arr.splice(loc.i,1); renderAll(); } };
+  if(el){ el.classList.add('leaving'); setTimeout(drop, 260); } else drop();
+}
+function undoNotice(nid){
+  clearNoticeTimer(nid);
+  const loc = findNotice(nid); if(!loc) return;
+  const notice = loc.arr[loc.i];
+  const restored = notice._undo ? notice._undo() : null;   // reverses the move, returns the item
+  loc.arr.splice(loc.i, 1);                                 // remove the notice
+  if(restored) loc.arr.splice(loc.i, 0, restored);          // drop the item back where it was
+  renderAll();
+}
+
 function saveForLater(id){
-  const i = cart.findIndex(p=>p.id===id);
+  const i = cart.findIndex(p=>p.id===id && !p.notice);
   if(i<0) return;
   const [item] = cart.splice(i,1);
   saved.unshift({ ...item, available:true, change:null, checked:false });
+  const nid = 'n'+Date.now()+Math.floor(Math.random()*1000);
+  cart.splice(i, 0, { notice:true, id:nid, name:item.name, dir:'sfl', delivery:item.delivery,
+    _undo:()=>{ const j=saved.findIndex(p=>p.id===id && !p.notice); return j>=0 ? saved.splice(j,1)[0] : null; } });
   renderAll();
-  toast(`Saved "${item.name.slice(0,28)}${item.name.length>28?'…':''}" for later`, ()=>{
-    const j = saved.findIndex(p=>p.id===id);
-    if(j>=0){ const [back]=saved.splice(j,1); cart.splice(i,0,back); renderAll(); }
-  });
+  armNotice(nid);
 }
 
 function moveToCart(id){
-  const i = saved.findIndex(p=>p.id===id);
+  const i = saved.findIndex(p=>p.id===id && !p.notice);
   if(i<0 || !saved[i].available) return;
   const [item] = saved.splice(i,1);
   const qtyMoved = item.qty || 1;
-  // merge if same SKU already in cart
-  const existing = cart.find(p=>p.sku===item.sku && p.price===item.price);
+  const existing = cart.find(p=>!p.notice && p.sku===item.sku && p.price===item.price);
   let newLine = null;
   if(existing){ existing.qty += qtyMoved; }
   else { newLine = { id:item.id, name:item.name, sku:item.sku, brand:item.brand, price:item.price,
@@ -911,13 +962,11 @@ function moveToCart(id){
                      qty:qtyMoved, art:item.art, delivery:'Tomorrow, May 11', split:false,
                      stockup:!!(item.deal && item.deal.type==='stock') };
          cart.push(newLine); }
+  const nid = 'n'+Date.now()+Math.floor(Math.random()*1000);
+  saved.splice(i, 0, { notice:true, id:nid, name:item.name, dir:'cart',
+    _undo:()=>{ if(existing){ existing.qty -= qtyMoved; } else if(newLine){ const k=cart.indexOf(newLine); if(k>=0) cart.splice(k,1); } return item; } });
   renderAll();
-  toast(`Moved "${item.name.slice(0,28)}${item.name.length>28?'…':''}" to cart`, ()=>{
-    if(existing){ existing.qty -= qtyMoved; }
-    else if(newLine){ const k = cart.indexOf(newLine); if(k>=0) cart.splice(k,1); }
-    saved.splice(Math.min(i, saved.length), 0, item);
-    renderAll();
-  });
+  armNotice(nid);
 }
 
 function removeCart(id){
@@ -953,6 +1002,7 @@ document.addEventListener('click', e=>{
     case 'save': saveForLater(id); break;
     case 'remove': removeCart(id); break;
     case 'tocart': moveToCart(id); break;
+    case 'undoNotice': undoNotice(t.dataset.nid); break;
     case 'sremove': removeSaved(id); break;
     case 'replace': toast('Opening replacement suggestions…'); break;
     case 'dismissPriceMsg': priceMsgDismissed = true; renderPriceMsg(); break;
