@@ -324,12 +324,13 @@
   .price-msg .pm-close:hover{ color:var(--text); }
 
   /* In-place move confirmation (replaces the row where an item was saved/moved) */
-  .movenotice{ display:flex; align-items:center; gap:12px; padding:20px 24px; overflow:hidden;
-               background:var(--white); border-bottom:1px solid var(--border); box-shadow:inset 3px 0 0 var(--blue);
-               font-family:var(--font); font-size:14px; color:var(--text); max-height:140px;
-               transition:opacity .24s ease, max-height .24s ease, padding .24s ease; }
-  .movenotice.leaving{ opacity:0; max-height:0; padding-top:0; padding-bottom:0; }
-  .movenotice .mn-ico{ flex:none; color:var(--blue); font-size:20px; }
+  .movenotice{ display:flex; align-items:flex-start; gap:12px; padding:22px 24px; overflow:hidden;
+               background:var(--white); border:1px solid var(--border); border-left:4px solid var(--green);
+               font-family:var(--font); font-size:14px; color:var(--text); max-height:180px;
+               transition:opacity .24s ease, max-height .24s ease, padding .24s ease, border-width .24s ease; }
+  .movenotice.leaving{ opacity:0; max-height:0; padding-top:0; padding-bottom:0; border-top-width:0; border-bottom-width:0; }
+  .movenotice .mn-ico{ flex:none; color:var(--green); font-size:20px; }
+  .movenotice .mn-qty b{ font-weight:700; }
   .movenotice .mn-text{ flex:1; min-width:0; }
   .movenotice .mn-name{ color:var(--blue); font-weight:700; text-decoration:none; }
   .movenotice .mn-name:hover{ text-decoration:underline; }
@@ -906,10 +907,10 @@ function findCart(id){ return cart.find(p=>p.id===id); }
 /* ---------- in-place move confirmation ---------- */
 const noticeTimers = {};
 function noticeHTML(n){
-  const dest = n.dir==='sfl' ? 'Saved for Later' : 'Cart';
+  const dest = n.dir==='sfl' ? 'Saved for Later' : 'your cart';
   return `<div class="movenotice" data-nid="${n.id}">
     <span class="ico mn-ico">check_circle</span>
-    <span class="mn-text"><a class="mn-name" href="#">${esc(n.name)}</a> has been moved to ${dest}.</span>
+    <span class="mn-text"><a class="mn-name" href="#">${esc(n.name)}</a>${n.qty!=null?` <span class="mn-qty">(Qty <b>${n.qty}</b>)</span>`:''} has been moved to ${dest}.</span>
     <button class="mn-undo" type="button" data-act="undoNotice" data-nid="${n.id}">Undo</button>
   </div>`;
 }
@@ -943,7 +944,7 @@ function saveForLater(id){
   const [item] = cart.splice(i,1);
   saved.unshift({ ...item, available:true, change:null, checked:false });
   const nid = 'n'+Date.now()+Math.floor(Math.random()*1000);
-  cart.splice(i, 0, { notice:true, id:nid, name:item.name, dir:'sfl', delivery:item.delivery,
+  cart.splice(i, 0, { notice:true, id:nid, name:item.name, qty:item.qty, dir:'sfl', delivery:item.delivery,
     _undo:()=>{ const j=saved.findIndex(p=>p.id===id && !p.notice); return j>=0 ? saved.splice(j,1)[0] : null; } });
   renderAll();
   armNotice(nid);
@@ -963,7 +964,7 @@ function moveToCart(id){
                      stockup:!!(item.deal && item.deal.type==='stock') };
          cart.push(newLine); }
   const nid = 'n'+Date.now()+Math.floor(Math.random()*1000);
-  saved.splice(i, 0, { notice:true, id:nid, name:item.name, dir:'cart',
+  saved.splice(i, 0, { notice:true, id:nid, name:item.name, qty:qtyMoved, dir:'cart',
     _undo:()=>{ if(existing){ existing.qty -= qtyMoved; } else if(newLine){ const k=cart.indexOf(newLine); if(k>=0) cart.splice(k,1); } return item; } });
   renderAll();
   armNotice(nid);
