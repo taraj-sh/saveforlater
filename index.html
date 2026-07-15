@@ -345,16 +345,20 @@
                         font-family:var(--font); font-size:14px; font-weight:700; color:var(--blue); }
   .movenotice .mn-undo:hover{ text-decoration:underline; }
 
-  /* Show More — primary button (design-system Purchase button spec) */
-  .show-more-wrap{ display:flex; justify-content:center; padding:24px 0; }
+  /* Load More button + lazy-load spinner */
+  .sfl-more{ display:flex; justify-content:center; padding:24px 0; }
   .show-more{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
-              width:343px; max-width:100%; height:50px; padding:8px 28px; border:0; border-radius:0; cursor:pointer;
+              width:280px; max-width:100%; height:50px; padding:8px 28px; border:0; border-radius:0; cursor:pointer;
               background:var(--blue); color:#fff; box-shadow:inset 0 -2px 0 rgba(0,0,0,.25);
               font-family:var(--font); font-weight:700; font-size:13px; line-height:100%;
               letter-spacing:.02em; text-transform:uppercase; }
   .show-more:hover{ background:#065F82; }
   .show-more:active{ box-shadow:inset 0 2px 0 rgba(0,0,0,.20); }
   .show-more .sm-label{ position:relative; top:1px; }
+  .sfl-sentinel{ display:flex; justify-content:center; align-items:center; padding:24px 0 14px; }
+  .sfl-spinner{ width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--blue);
+                border-radius:50%; animation:sflspin .7s linear infinite; }
+  @keyframes sflspin{ to{ transform:rotate(360deg); } }
 
   /* Sticky mobile checkout bar — appears once the Order Summary drops below the cart (Figma screens) */
   .checkout-bar{ position:fixed; left:0; right:0; bottom:0; z-index:55; display:none;
@@ -677,9 +681,33 @@ let saved = [
   { id:'s7', name:'ProPress Standard Jaw Set, 1/2"–1"', sku:'PPJAW1', brand:'Ridgid', price:219.00, prevPrice:234.00, change:'down', qty:1, art:'clamp', cat:'Tools', available:true, checked:false },
   { id:'s8', name:'24V Transformer, 40VA Foot-Mount', sku:'TRX40', brand:'Honeywell', price:28.50, prevPrice:24.90, change:'up', qty:1, art:'thermostat', cat:'Electrical', available:true, checked:false },
   { id:'s9', name:'3/4" Brass Gate Valve, Threaded', sku:'GV34T', brand:'Matco-Norca', price:16.75, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false },
+  { id:'s10', name:'Watts 3/4" Pressure Reducing Valve', sku:'LFN45B', brand:'Watts', price:62.40, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false },
+  { id:'s11', name:'3/4" Type L Hard Copper Pipe, 5 ft', sku:'CP34L05', brand:'Mueller', price:18.50, change:null, qty:1, art:'pipe', cat:'Pipe', available:true, checked:false },
+  { id:'s12', name:'1" PEX-A Tubing, 100 ft Coil', sku:'PEXA1100', brand:'Uponor', price:88.00, change:null, qty:1, art:'pipe', cat:'PEX', available:true, checked:false },
+  { id:'s13', name:'Honeywell Round Non-Programmable Thermostat', sku:'CT87N', brand:'Honeywell', price:29.99, change:null, qty:1, art:'thermostat', cat:'HVAC', available:true, checked:false },
+  { id:'s14', name:'1/2" Copper 45° Elbow', sku:'C45012', brand:'Elkhart', price:0.95, change:null, qty:1, art:'elbow', cat:'Fittings', available:true, checked:false },
+  { id:'s15', name:'Taco 006 Bronze Circulator Pump', sku:'006B4', brand:'Taco', price:139.00, change:null, qty:1, art:'pump', cat:'Heating', available:true, checked:false },
+  { id:'s16', name:'1/2" PEX Crimp Ring, Bag of 100', sku:'PXR12100', brand:'Apollo', price:12.75, change:null, qty:1, art:'clamp', cat:'PEX', available:true, checked:false },
+  { id:'s17', name:'3/4" Full Port Brass Ball Valve', sku:'BV34FP', brand:'Matco-Norca', price:12.20, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false },
+  { id:'s18', name:'1" x 3/4" Copper Reducing Coupling', sku:'CC10034', brand:'Nibco', price:2.40, change:null, qty:1, art:'elbow', cat:'Fittings', available:true, checked:false },
+  { id:'s19', name:'Grundfos UP15-42SU Circulator Pump', sku:'UP1542SU', brand:'Grundfos', price:118.00, change:null, qty:1, art:'pump', cat:'Heating', available:true, checked:false },
+  { id:'s20', name:'3/4" Copper Tee', sku:'CT34', brand:'Nibco', price:1.85, change:null, qty:1, art:'elbow', cat:'Fittings', available:true, checked:false },
+  { id:'s21', name:'24V 40VA Transformer, Plate Mount', sku:'TRX40P', brand:'Honeywell', price:26.00, change:null, qty:1, art:'thermostat', cat:'Electrical', available:true, checked:false },
+  { id:'s22', name:'1/2" PEX Ball Valve, Crimp', sku:'PXBV12', brand:'Apollo', price:9.60, change:null, qty:1, art:'valve', cat:'PEX', available:true, checked:false },
+  { id:'s23', name:'ProPress 3/4" Copper Coupling', sku:'PPC34', brand:'Viega', price:6.30, change:null, qty:1, art:'clamp', cat:'Tools', available:true, checked:false },
+  { id:'s24', name:'1/2" Copper Pipe, 10 ft, Type M', sku:'CP12M10', brand:'Cerro', price:14.20, change:null, qty:1, art:'pipe', cat:'Pipe', available:true, checked:false },
+  { id:'s25', name:'Honeywell 7-Day Programmable Thermostat', sku:'RTH8560D', brand:'Honeywell', price:59.99, change:null, qty:1, art:'thermostat', cat:'HVAC', available:true, checked:false },
 ];
 let savedFilters = new Set();
-let savedShown = 8;   // Save-for-Later shows this many cards; "Show More" reveals +8 (resets when a pill changes)
+let savedShown = 15;   // Save-for-Later renders this many; Load More reveals +15 per click (resets on pill change)
+let sflLoading = false, sflLoadTimer = null;
+function loadMore(){
+  if(sflLoading) return;
+  sflLoading = true;            // swap the button for a spinner, then reveal the next batch
+  renderSaved();
+  sflLoadTimer = setTimeout(()=>{ savedShown += 15; sflLoading = false; sflLoadTimer = null; renderSaved(); }, 450);
+}
+function stopLazyLoad(){ if(sflLoadTimer){ clearTimeout(sflLoadTimer); sflLoadTimer = null; } sflLoading = false; }
 let sflEmptyPreview = false;   // proto toggle: preview the Save-for-Later empty state
 const SEED = { cart: JSON.parse(JSON.stringify(cart)), saved: JSON.parse(JSON.stringify(saved)) };
 
@@ -707,7 +735,8 @@ function resetPrototype(){
   cart = JSON.parse(JSON.stringify(SEED.cart));
   saved = JSON.parse(JSON.stringify(SEED.saved));
   savedFilters.clear();
-  savedShown = 8;
+  savedShown = 15;
+  stopLazyLoad();
   sflEmptyPreview = false;
   { const b=$('fabEmpty'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); } }
   priceMsgDismissed = false;
@@ -925,7 +954,9 @@ function renderSaved(){
       </div>
     </div>
     ${rows}
-    ${remaining>0 ? `<div class="show-more-wrap"><button class="show-more" data-act="showMore"><span class="sm-label">Show More</span></button></div>` : ''}`;
+    ${remaining>0 ? (sflLoading
+        ? `<div class="sfl-sentinel"><span class="sfl-spinner"></span></div>`
+        : `<div class="sfl-more"><button class="show-more" data-act="loadMore" id="loadMoreBtn"><span class="sm-label">Show More</span></button></div>`) : ''}`;
 }
 
 function allChecked(){
@@ -1066,9 +1097,10 @@ document.addEventListener('click', e=>{
       if(!c) savedFilters.clear();
       else if(savedFilters.has(c)) savedFilters.delete(c);
       else savedFilters.add(c);
-      savedShown = 8;   // reset the cap when the filter changes
+      savedShown = 15;   // reset the batch when the filter changes
+      stopLazyLoad();
       renderSaved(); break; }
-    case 'showMore': savedShown += 8; renderSaved(); break;
+    case 'loadMore': loadMore(); break;
     case 'check': { const p=saved.find(s=>s.id===id); if(p&&p.available){ p.checked=!p.checked; renderSaved(); } break; }
     case 'checkall': { const v=!allChecked(); saved.forEach(s=>{ if(s.available) s.checked=v; }); renderSaved(); break; }
     case 'bulkcart': { saved.filter(s=>s.checked&&s.available).map(s=>s.id).forEach(moveToCart); break; }
