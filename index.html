@@ -260,6 +260,11 @@
   .pricechip .ico{ font-size:14px; }
   .pricechip .old{ color:var(--muted); font-weight:400; text-decoration:line-through; }
   .empty{ padding:28px 32px; color:var(--muted); font-size:14px; }
+  /* Save for Later empty state — matches the site's empty-cart pattern (illustration + one line) */
+  .sfl-empty{ text-align:center; padding:72px 24px 56px; }
+  .sfl-empty-art{ width:168px; height:auto; display:block; margin:0 auto 6px; }
+  .sfl-empty-title{ font-size:16px; font-weight:400; color:var(--muted); }
+  .sfl-empty-sub{ font-size:13px; color:#9A9A9A; margin-top:5px; }
 
   /* ---------------- Summary ---------------- */
   .summary{ background:#fff; border:1px solid var(--border); padding:36px 36px 32px; }
@@ -301,6 +306,8 @@
   .proto-tools button:hover{ background:rgba(255,255,255,.12); }
   .proto-tools button:disabled{ opacity:.38; cursor:default; }
   .proto-tools button:disabled:hover{ background:transparent; }
+  .proto-tools button.on{ background:var(--tm-blue); }
+  .proto-tools button.on:hover{ background:#0a5c96; }
   .proto-tools .ico{ font-size:18px; }
 
   /* prototype ribbon */
@@ -337,6 +344,17 @@
   .movenotice .mn-undo{ flex:none; background:none; border:0; cursor:pointer; padding:4px 6px;
                         font-family:var(--font); font-size:14px; font-weight:700; color:var(--blue); }
   .movenotice .mn-undo:hover{ text-decoration:underline; }
+
+  /* Show More — primary button (design-system Purchase button spec) */
+  .show-more-wrap{ display:flex; justify-content:center; padding:24px 0; }
+  .show-more{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
+              width:343px; max-width:100%; height:50px; padding:8px 28px; border:0; border-radius:0; cursor:pointer;
+              background:var(--blue); color:#fff; box-shadow:inset 0 -2px 0 rgba(0,0,0,.25);
+              font-family:var(--font); font-weight:700; font-size:13px; line-height:100%;
+              letter-spacing:.02em; text-transform:uppercase; }
+  .show-more:hover{ background:#065F82; }
+  .show-more:active{ box-shadow:inset 0 2px 0 rgba(0,0,0,.20); }
+  .show-more .sm-label{ position:relative; top:1px; }
 
   /* Sticky mobile checkout bar — appears once the Order Summary drops below the cart (Figma screens) */
   .checkout-bar{ position:fixed; left:0; right:0; bottom:0; z-index:55; display:none;
@@ -622,6 +640,8 @@
 
 <div class="toast" id="toast"><span class="ico">check_circle</span><span id="toastMsg"></span><button id="toastUndo" style="display:none">Undo</button></div>
 <div class="proto-tools" role="group" aria-label="Prototype controls">
+  <button id="fabEmpty" type="button" aria-pressed="false"><span class="ico">bookmark</span>Empty SFL</button>
+  <span class="pt-sep"></span>
   <button id="fabUndo" type="button" disabled><span class="ico">undo</span>Undo</button>
   <button id="fabReset" type="button"><span class="ico">restart_alt</span>Reset</button>
 </div>
@@ -659,6 +679,8 @@ let saved = [
   { id:'s9', name:'3/4" Brass Gate Valve, Threaded', sku:'GV34T', brand:'Matco-Norca', price:16.75, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false },
 ];
 let savedFilters = new Set();
+let savedShown = 8;   // Save-for-Later shows this many cards; "Show More" reveals +8 (resets when a pill changes)
+let sflEmptyPreview = false;   // proto toggle: preview the Save-for-Later empty state
 const SEED = { cart: JSON.parse(JSON.stringify(cart)), saved: JSON.parse(JSON.stringify(saved)) };
 
 const TAX_RATE = 0.0825;
@@ -685,6 +707,9 @@ function resetPrototype(){
   cart = JSON.parse(JSON.stringify(SEED.cart));
   saved = JSON.parse(JSON.stringify(SEED.saved));
   savedFilters.clear();
+  savedShown = 8;
+  sflEmptyPreview = false;
+  { const b=$('fabEmpty'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); } }
   priceMsgDismissed = false;
   undoFn = null;
   $('toast').classList.remove('show');
@@ -694,6 +719,13 @@ function resetPrototype(){
 $('toastUndo').onclick = doUndo;
 $('fabUndo').onclick = doUndo;
 $('fabReset').onclick = resetPrototype;
+$('fabEmpty').onclick = ()=>{
+  sflEmptyPreview = !sflEmptyPreview;
+  const b = $('fabEmpty');
+  b.setAttribute('aria-pressed', sflEmptyPreview ? 'true' : 'false');
+  b.classList.toggle('on', sflEmptyPreview);
+  renderSaved();
+};
 
 /* ---------- render ---------- */
 function metaLine(p){
@@ -806,12 +838,26 @@ function renderPriceMsg(){
 
 function renderSaved(){
   const realSaved = saved.filter(s=>!s.notice);
-  $('savedCount').textContent = realSaved.length;
+  const showEmpty = sflEmptyPreview || realSaved.length === 0;
+  $('savedCount').textContent = showEmpty ? 0 : realSaved.length;
   const box = $('savedBox');
   const anyChecked = saved.some(s=>s.checked && s.available);
-  renderPriceMsg();
-  if(saved.length === 0){
-    box.innerHTML = `<div class="empty">Nothing saved yet. Use <b>Save for later</b> on any cart item to park it here without losing it.</div>`;
+  if(showEmpty && sflEmptyPreview){ const pm=$('priceMsg'); if(pm){ pm.innerHTML=''; pm.style.display='none'; } }
+  else renderPriceMsg();
+  if(showEmpty){
+    box.innerHTML = `<div class="sfl-empty">
+      <svg class="sfl-empty-art" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="110" cy="90" r="72" fill="#F6F1EC"/>
+        <path d="M95 36 L90 21" stroke="#F15C02" stroke-width="4" stroke-linecap="round"/>
+        <path d="M110 32 L110 16" stroke="#F15C02" stroke-width="4" stroke-linecap="round"/>
+        <path d="M125 36 L130 21" stroke="#F15C02" stroke-width="4" stroke-linecap="round"/>
+        <path d="M86 54 H134 V130 L110 111 L86 130 Z" fill="#FFFFFF" stroke="#343434" stroke-width="5" stroke-linejoin="round"/>
+        <path d="M44 152 H86 M98 152 H156 M168 152 H176" stroke="#343434" stroke-width="4" stroke-linecap="round"/>
+        <path d="M80 166 H140 M94 176 H126" stroke="#DCDCDC" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+      <div class="sfl-empty-title">You do not have any items saved for later.</div>
+      <div class="sfl-empty-sub">Saved items from your cart will appear here.</div>
+    </div>`;
     return;
   }
 
@@ -832,7 +878,15 @@ function renderSaved(){
       ${cats.map(c=>pill(c, `${c} (${counts[c]})`, savedFilters.has(c))).join('')}
     </div>` : '';
 
-  const visible = savedFilters.size ? saved.filter(s=> s.notice || savedFilters.has(s.cat)) : saved;
+  const filtered = savedFilters.size ? saved.filter(s=> s.notice || savedFilters.has(s.cat)) : saved;
+  let shownReal = 0;
+  const visible = [];
+  for(const s of filtered){
+    if(s.notice){ visible.push(s); continue; }        // confirmations always render in place
+    if(shownReal < savedShown){ visible.push(s); shownReal++; }
+  }
+  const realTotal = filtered.reduce((n,s)=> n + (s.notice?0:1), 0);
+  const remaining = realTotal - shownReal;
   const rows = visible.map(p=>{
     if(p.notice) return noticeHTML(p);
     const checkable = p.available;
@@ -870,7 +924,8 @@ function renderSaved(){
         <button data-act="bulkremove" ${saved.some(s=>s.checked)?'':'disabled'}>Remove</button>
       </div>
     </div>
-    ${rows}`;
+    ${rows}
+    ${remaining>0 ? `<div class="show-more-wrap"><button class="show-more" data-act="showMore"><span class="sm-label">Show More</span></button></div>` : ''}`;
 }
 
 function allChecked(){
@@ -1011,7 +1066,9 @@ document.addEventListener('click', e=>{
       if(!c) savedFilters.clear();
       else if(savedFilters.has(c)) savedFilters.delete(c);
       else savedFilters.add(c);
+      savedShown = 8;   // reset the cap when the filter changes
       renderSaved(); break; }
+    case 'showMore': savedShown += 8; renderSaved(); break;
     case 'check': { const p=saved.find(s=>s.id===id); if(p&&p.available){ p.checked=!p.checked; renderSaved(); } break; }
     case 'checkall': { const v=!allChecked(); saved.forEach(s=>{ if(s.available) s.checked=v; }); renderSaved(); break; }
     case 'bulkcart': { saved.filter(s=>s.checked&&s.available).map(s=>s.id).forEach(moveToCart); break; }
