@@ -228,6 +228,12 @@
   .icon-btn{ color:var(--blue); display:flex; align-items:center; }
   .icon-btn .ico{ font-size:16px; }
   .save-link{ font-size:13px; font-weight:700; color:var(--blue); white-space:nowrap; }
+  .pactions .save-wrap{ position:relative; display:inline-flex; align-items:center; }
+  .pactions .item-newbadge{ display:none; position:absolute; bottom:100%; left:-20px; margin-bottom:6px; }
+  .pactions .item-newbadge svg{ display:block; }
+  /* Badge V2 (proto toggle): move the NEW! badge from the header link to the first cart line */
+  body.badge-v2 .cart-control .cc-sfl .cc-badge{ display:none; }
+  body.badge-v2 .pcard.first-card .pactions .item-newbadge{ display:block; }
 
   .cart-foot{ display:flex; justify-content:flex-end; padding:4px 4px 0; }
   .clear-cart{ display:inline-flex; align-items:center; gap:8px; font-weight:700; color:var(--link); }
@@ -531,11 +537,11 @@
     /* cart card re-stacks: price/stepper move UNDER the info */
     .pcard{ flex-wrap:wrap; padding:16px; gap:20px; }
     .thumb{ width:64px; height:64px; }
-    .pinfo{ flex-basis:calc(100% - 80px); }
+    .pinfo{ flex-basis:calc(100% - 80px); padding-right:128px; }
     .pright{ width:100%; padding-top:12px; border-top:1px dashed var(--border); margin-top:4px; }
     .qty-left{ gap:8px; }
-    .pactions{ position:static; flex-direction:row; align-items:center; gap:16px;
-               width:100%; justify-content:flex-end; margin-top:8px; }
+    /* Save for Later | trash stays pinned to the card's top-right at every breakpoint (Figma) */
+    .pactions{ right:16px; top:14px; margin-top:0; width:auto; }
 
     /* saved card stays two-column (desktop-style) here; just tighten padding */
     .scard{ padding:44px 16px 18px; }
@@ -750,6 +756,8 @@
   <span class="pt-sep"></span>
   <button id="fabUndo" type="button" disabled><span class="ico">undo</span>Undo</button>
   <button id="fabReset" type="button"><span class="ico">restart_alt</span>Reset</button>
+  <span class="pt-sep"></span>
+  <button id="fabBadgeV2" type="button" aria-pressed="false">Badge V2</button>
 </div>
 
 <script>
@@ -763,6 +771,9 @@ const ART = {
   thermostat:`<svg viewBox="0 0 60 60" fill="none" stroke="#777" stroke-width="2.5"><rect x="14" y="10" width="32" height="40" rx="3"/><rect x="20" y="18" width="20" height="12" rx="2"/><circle cx="30" cy="40" r="4"/></svg>`,
   ring:`<svg viewBox="0 0 60 60" fill="none" stroke="#777" stroke-width="3"><circle cx="30" cy="30" r="16"/><circle cx="30" cy="30" r="9"/></svg>`
 };
+
+/* NEW! badge (Figma "Product Card Badge") — reused in header + item line */
+const NEW_BADGE_SVG = `<svg width="40" height="16" viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="16" rx="4" fill="#F15C02"/><path d="M7.10852 11.5V3.8H8.59352L11.4095 8.849H11.4315V3.8H12.9275V11.5H11.4645L8.61552 6.451H8.59352V11.5H7.10852ZM14.6925 11.5V3.8H19.5655V5.175H16.1775V6.902H19.2575V8.222H16.1775V10.125H19.5655V11.5H14.6925ZM21.9979 11.5L20.5019 3.8H22.0089L22.9989 9.036H23.0319L24.8029 3.8H25.5509L27.3219 9.036H27.3549L28.3449 3.8H29.8189L28.3229 11.5H26.7829L25.1989 6.715H25.1329L23.5379 11.5H21.9979ZM31.2074 8.959V3.8H32.6924V8.959H31.2074ZM31.1414 11.5V9.938H32.7804V11.5H31.1414Z" fill="white"/></svg>`;
 
 /* ---------- state ---------- */
 let cart = [
@@ -868,6 +879,14 @@ $('fabEmpty').onclick = ()=>{
   b.setAttribute('aria-pressed', sflEmptyPreview ? 'true' : 'false');
   b.classList.toggle('on', sflEmptyPreview);
   renderSaved();
+};
+let badgeV2 = false;
+$('fabBadgeV2').onclick = ()=>{
+  badgeV2 = !badgeV2;
+  const b = $('fabBadgeV2');
+  b.setAttribute('aria-pressed', badgeV2 ? 'true' : 'false');
+  b.classList.toggle('on', badgeV2);
+  document.body.classList.toggle('badge-v2', badgeV2);
 };
 
 /* ---------- render ---------- */
@@ -995,7 +1014,7 @@ function normalCardHTML(p){
       ${p.stockup?`<div class="stockup">Stock Up &amp; Save Available <span class="ico chev">chevron_right</span></div>`:''}
     </div>
     <div class="pactions">
-      <button class="save-link" data-act="save" data-id="${p.id}">Save for Later</button>
+      <span class="save-wrap"><span class="item-newbadge">${NEW_BADGE_SVG}</span><button class="save-link" data-act="save" data-id="${p.id}">Save for Later</button></span>
       <span class="pipe">|</span>
       <button class="icon-btn" data-act="remove" data-id="${p.id}" aria-label="Remove item"><span class="ico">delete</span></button>
     </div>
@@ -1038,6 +1057,7 @@ function renderCart(){
     }).join('');
   }
   wrap.innerHTML = html;
+  const fc = wrap.querySelector('.pcard'); if(fc) fc.classList.add('first-card');
 }
 
 function priceChip(p){
