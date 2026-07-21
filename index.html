@@ -537,14 +537,21 @@
     /* cart card re-stacks: price/stepper move UNDER the info */
     .pcard{ flex-wrap:wrap; padding:16px; gap:20px; }
     .thumb{ width:64px; height:64px; }
-    .pinfo{ flex-basis:calc(100% - 80px); padding-right:128px; }
+    .pcard .pinfo{ flex-basis:calc(100% - 80px); padding-right:128px; }
     .pright{ width:100%; padding-top:12px; border-top:1px dashed var(--border); margin-top:4px; }
     .qty-left{ gap:8px; }
     /* Save for Later | trash stays pinned to the card's top-right at every breakpoint (Figma) */
     .pactions{ right:16px; top:14px; margin-top:0; width:auto; }
 
-    /* saved card stays two-column (desktop-style) here; just tighten padding */
-    .scard{ padding:44px 16px 18px; }
+    /* saved card stacks (matches phone tile 289:15671): name row, price on its own line, full-width Move to Cart */
+    .scard{ grid-template-columns:auto minmax(0,1fr);
+            grid-template-areas:"thumb info" "price price" "move move";
+            row-gap:12px; column-gap:16px; padding:44px 16px 18px; }
+    .scard > .thumb{ align-self:start; }
+    .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
+    .scard > .slinks{ justify-self:stretch; }
+    .scard > .slinks .movecart-btn{ width:150px; }
+    .scard > .slinks .replace{ align-self:flex-start; }
     .scard .strash{ right:16px; top:14px; }
     .summary{ padding:28px 20px 24px; }
   }
@@ -586,7 +593,7 @@
     .scard > .thumb{ align-self:start; }
     .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
     .scard > .slinks{ justify-self:stretch; }
-    .scard > .slinks .movecart-btn{ width:100%; }
+    .scard > .slinks .movecart-btn{ width:150px; }
     .scard > .slinks .replace{ align-self:flex-start; }
     .su-box, .bu-box{ text-align:left; align-items:flex-start; }
   }
