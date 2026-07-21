@@ -1226,7 +1226,7 @@ function noticeHTML(n){
     <span class="mn-text"><a class="mn-name" href="#">${esc(n.name)}</a>${n.qty!=null?` <span class="mn-qty">(Qty <b>${n.qty}</b>)</span>`:''} has been moved to ${dest}.</span>
   </div>`;
 }
-function armNotice(nid){ clearNoticeTimer(nid); noticeTimers[nid] = setTimeout(()=>dismissNotice(nid), 1000); }
+function armNotice(nid){ clearNoticeTimer(nid); noticeTimers[nid] = setTimeout(()=>dismissNotice(nid), 2000); }
 function clearNoticeTimer(nid){ if(noticeTimers[nid]){ clearTimeout(noticeTimers[nid]); delete noticeTimers[nid]; } }
 function findNotice(nid){
   let i = cart.findIndex(p=>p.notice && p.id===nid);
