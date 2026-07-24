@@ -312,6 +312,18 @@
   .bu-line{ font-size:11px; color:var(--text); }
   .bu-each b{ font-size:13px; font-weight:700; color:var(--tm-blue); }
   .bu-each .u{ font-size:11px; color:var(--text); margin-left:2px; }
+  /* Box Up & Save — in-cart (box-item card) */
+  .boxsum{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+  .boxsum-units{ font-size:14px; font-weight:700; color:var(--text); }
+  .boxsum-total{ font-size:16px; font-weight:700; color:var(--text); white-space:nowrap; }
+  .boxcard .pright{ gap:0; }
+  .boxsum-divider{ margin:2px 0 12px; }
+  .boxcard .linetotal{ font-size:13px; }
+  .boxup{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .boxup-cap{ font-size:12px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:#757575; }
+  .box-stepper button.muted{ background:#F6C9A6; }
+  .each .boxline{ font-size:11px; color:var(--text); }
+  .boxtoggle{ font-size:13px; font-weight:700; color:var(--blue); align-self:flex-start; }
   /* saved-card price/deal column */
   .sprice{ align-self:start; justify-self:end; text-align:right; display:flex; flex-direction:column;
            align-items:flex-end; gap:10px; }
@@ -797,7 +809,7 @@ let saved = [
   { id:'s3', name:'1/2" Brass Ball Valve, FIP × FIP', sku:'BV12FF', brand:'Matco-Norca', price:8.00, was:9.40, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false,
     deal:{ type:'stock', tiers:[{r:'2–3', each:7.00},{r:'4+', each:6.00}], perCase:10 } },
   { id:'s4', name:'Honeywell T6 Pro Programmable Thermostat', sku:'TH6220U2000', brand:'Honeywell', price:null, change:null, qty:1, art:'thermostat', cat:'HVAC', available:false, checked:false },
-  { id:'s5', name:'1/2" x 3/8" Copper 90° Elbow', sku:'31272', brand:'Elkhart', price:1.22, was:1.85, change:null, qty:1, art:'elbow', cat:'Fittings', available:true, checked:false,
+  { id:'s5', name:'1/2" x 3/8" Copper 90° Elbow', sku:'31272', brand:'Elkhart', price:1.22, was:1.85, change:null, qty:52, art:'elbow', cat:'Fittings', available:true, checked:false,
     deal:{ type:'box', savePct:14, boxQty:50, boxPrice:55.00, eachInBox:1.10, boxWas:64.75 } },
   { id:'s6', name:'1/2" PEX-A Tubing, 100 ft Coil', sku:'PEXA12100', brand:'Uponor', price:42.00, prevPrice:36.75, change:'up', qty:1, art:'pipe', cat:'PEX', available:true, checked:false },
   { id:'s7', name:'ProPress Standard Jaw Set, 1/2"–1"', sku:'PPJAW1', brand:'Ridgid', price:219.00, prevPrice:234.00, change:'down', qty:1, art:'clamp', cat:'Tools', available:true, checked:false },
@@ -995,7 +1007,71 @@ function splitMobileCardHTML(sibs){
   </div>`;
 }
 
+// Box-item cart card: loose-unit stepper + "Box Up & Save" section with its own box stepper.
+function boxCardHTML(p){
+  const d = p.deal;
+  const boxes = p.boxes || 0;
+  const looseTotal = p.price * p.qty;
+  const boxTotal = d.boxPrice * boxes;
+  const totalUnits = p.qty + boxes * d.boxQty;
+  const grandTotal = looseTotal + boxTotal;
+  const boxDecIcon = boxes===1 ? 'delete' : 'remove';   // at 1 box the "−" becomes a trash (removes the box)
+  return `<div class="pcard boxcard${loadingIds.has(p.id)?' loading':''}" data-id="${p.id}">
+    ${loadingIds.has(p.id)?SPIN:''}
+    <div class="thumb">${thumbHTML(p)}</div>
+    <div class="pinfo">
+      <div class="pname"><a href="#">${esc(p.name)}</a></div>
+      ${metaLine(p)}
+    </div>
+    <div class="pright">
+      <div class="boxsum">
+        <span class="boxsum-units">${totalUnits} units</span>
+        <span class="boxsum-total">${money(grandTotal)}</span>
+      </div>
+      <div class="sc-divider boxsum-divider"></div>
+      <div class="qty-row">
+        <div class="qty-left">
+          <div class="stepper">
+            <button data-act="dec" data-id="${p.id}" aria-label="Decrease quantity"><span class="ico">remove</span></button>
+            <input type="text" inputmode="numeric" value="${p.qty}" data-qty="${p.id}" aria-label="Quantity">
+            <button data-act="inc" data-id="${p.id}" aria-label="Increase quantity"><span class="ico">add</span></button>
+          </div>
+          <div class="each">
+            ${p.was?`<span class="was">${money(p.was)}</span>`:''}
+            <span class="nowrow"><span class="now">${money(p.price)}</span><span class="unit">each</span></span>
+          </div>
+        </div>
+        <div class="linetotal">${money(looseTotal)}</div>
+      </div>
+      ${p.boxOpen ? `<div class="boxup">
+        <div class="boxup-cap">Box Up &amp; Save ${d.savePct}%</div>
+        <div class="qty-row">
+          <div class="qty-left">
+            <div class="stepper box-stepper">
+              <button class="${boxes<=0?'muted':''}" data-act="decbox" data-id="${p.id}" aria-label="${boxes===1?'Remove box':'Decrease boxes'}"><span class="ico">${boxDecIcon}</span></button>
+              <input type="text" inputmode="numeric" value="${boxes}" data-boxqty="${p.id}" aria-label="Boxes">
+              <button data-act="incbox" data-id="${p.id}" aria-label="Increase boxes"><span class="ico">add</span></button>
+            </div>
+            <div class="each">
+              ${d.boxWas?`<span class="was">${money(d.boxWas)}</span>`:''}
+              <span class="boxline">${money(d.boxPrice)} box of ${d.boxQty}</span>
+              <span class="nowrow"><span class="now">${money(d.eachInBox)}</span><span class="unit">each</span></span>
+            </div>
+          </div>
+          <div class="linetotal">${money(boxTotal)}</div>
+        </div>
+      </div>` : ``}
+    </div>
+    <div class="pactions">
+      <span class="save-wrap"><span class="item-newbadge">${NEW_BADGE_SVG}</span><button class="save-link" data-act="save" data-id="${p.id}">Save for Later</button></span>
+      <span class="pipe">|</span>
+      <button class="icon-btn" data-act="remove" data-id="${p.id}" aria-label="Remove item"><span class="ico">delete</span></button>
+    </div>
+  </div>`;
+}
+
 function normalCardHTML(p){
+  if(p.deal && p.deal.type==='box') return boxCardHTML(p);
   return `<div class="pcard${loadingIds.has(p.id)?' loading':''}" data-id="${p.id}">
     ${loadingIds.has(p.id)?SPIN:''}
     <div class="thumb">${thumbHTML(p)}</div>
@@ -1193,15 +1269,16 @@ function allChecked(){
 
 function renderSummary(){
   const real = cart.filter(p=>!p.notice);
-  const count = real.reduce((n,p)=>n+p.qty,0);
-  const sub = real.reduce((s,p)=>s+p.price*p.qty,0);
+  const isBox = p => p.deal && p.deal.type==='box';
+  const count = real.reduce((n,p)=>n+p.qty+(isBox(p)?(p.boxes||0)*p.deal.boxQty:0),0);
+  const sub = real.reduce((s,p)=>s+p.price*p.qty+(isBox(p)?p.deal.boxPrice*(p.boxes||0):0),0);
   const tax = sub*TAX_RATE;
   $('subLbl').textContent = `Subtotal (${count} item${count===1?'':'s'})`;
   $('subVal').textContent = money(sub);
   $('taxVal').textContent = money(tax);
   $('totVal').textContent = money(sub+tax);
   // sticky checkout bar mirrors the summary total, with the pre-savings total struck through
-  const origSub = real.reduce((s,p)=>s+(p.was||p.price)*p.qty,0);
+  const origSub = real.reduce((s,p)=>s+(p.was||p.price)*p.qty+(isBox(p)?(p.deal.boxWas||p.deal.boxPrice)*(p.boxes||0):0),0);
   const cbVal = $('cbVal'), cbWas = $('cbWas');
   if(cbVal) cbVal.textContent = money(sub+tax);
   if(cbWas){
@@ -1284,6 +1361,14 @@ function moveToCart(id){
         split:false, stockup:false, splitKey:item.splitKey, splitIdx:part.splitIdx, splitTotal:item.splitTotal,
         fulfilled:item.fulfilled, caseQty:item.caseQty });
     });
+  } else if(item.deal && item.deal.type==='box'){
+    // Box item: auto-split the moved qty into full boxes + loose remainder.
+    const d = item.deal;
+    const boxes = Math.floor(qtyMoved / d.boxQty);
+    const loose = qtyMoved % d.boxQty;
+    cart.push({ id:item.id, name:item.name, sku:item.sku, brand:item.brand, price:item.price,
+                was:item.was || null, qty:loose, boxes:boxes, deal:d, boxOpen:true,
+                art:item.art, delivery:'Tomorrow, May 11', split:false, stockup:false });
   } else {
     const existing = cart.find(p=>!p.notice && p.sku===item.sku && p.price===item.price);
     if(existing){ existing.qty += qtyMoved; }
@@ -1324,8 +1409,14 @@ function removeSaved(id){
 
 function setQty(id,val){
   const p = findCart(id); if(!p) return;
-  let q = parseInt(val,10); if(isNaN(q)||q<1) q=1; if(q>9999) q=9999;
+  const min = (p.deal && p.deal.type==='box') ? 0 : 1;   // box items can drop loose units to 0 (boxes cover it)
+  let q = parseInt(val,10); if(isNaN(q)||q<min) q=min; if(q>9999) q=9999;
   p.qty=q; renderAll();
+}
+function setBoxQty(id,val){
+  const p = findCart(id); if(!p) return;
+  let q = parseInt(val,10); if(isNaN(q)||q<0) q=0; if(q>9999) q=9999;
+  p.boxes=q; renderAll();
 }
 
 /* ---------- event delegation ---------- */
@@ -1335,7 +1426,10 @@ document.addEventListener('click', e=>{
   const act = t.dataset.act, id = t.dataset.id;
   switch(act){
     case 'inc': { const p=findCart(id); if(p){p.qty++; renderAll();} break; }
-    case 'dec': { const p=findCart(id); if(p){p.qty=Math.max(1,p.qty-1); renderAll();} break; }
+    case 'dec': { const p=findCart(id); if(p){const min=(p.deal&&p.deal.type==='box')?0:1; p.qty=Math.max(min,p.qty-1); renderAll();} break; }
+    case 'incbox': { const p=findCart(id); if(p){p.boxes=(p.boxes||0)+1; renderAll();} break; }
+    case 'decbox': { const p=findCart(id); if(p){p.boxes=Math.max(0,(p.boxes||0)-1); renderAll();} break; }
+    case 'togglebox': { const p=findCart(id); if(p){p.boxOpen=!p.boxOpen; renderAll();} break; }
     case 'save': withCardSpinner(id, ()=>saveForLater(id)); break;
     case 'remove': withCardSpinner(id, ()=>removeCart(id)); break;
     case 'removeSplit': removeSplit(t.dataset.key); break;
@@ -1362,6 +1456,7 @@ document.addEventListener('click', e=>{
 
 document.addEventListener('change', e=>{
   if(e.target.matches('[data-qty]')) setQty(e.target.dataset.qty, e.target.value);
+  if(e.target.matches('[data-boxqty]')) setBoxQty(e.target.dataset.boxqty, e.target.value);
 });
 
 $('clearCart').onclick = ()=>{
