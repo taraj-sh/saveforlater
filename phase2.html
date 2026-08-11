@@ -895,8 +895,6 @@
   <span class="pt-sep"></span>
   <button id="fabUndo" type="button" disabled><span class="ico">undo</span>Undo</button>
   <button id="fabReset" type="button"><span class="ico">restart_alt</span>Reset</button>
-  <span class="pt-sep"></span>
-  <button id="fabBadgeV2" type="button" aria-pressed="false">Badge V2</button>
 </div>
 
 <script>
@@ -1023,14 +1021,6 @@ $('fabLoggedOut').onclick = ()=>{
   b.setAttribute('aria-pressed', out ? 'true' : 'false');
   b.classList.toggle('on', out);
   if(loggedIn) closeLoginModal();
-};
-let badgeV2 = false;
-$('fabBadgeV2').onclick = ()=>{
-  badgeV2 = !badgeV2;
-  const b = $('fabBadgeV2');
-  b.setAttribute('aria-pressed', badgeV2 ? 'true' : 'false');
-  b.classList.toggle('on', badgeV2);
-  document.body.classList.toggle('badge-v2', badgeV2);
 };
 
 /* ---------- render ---------- */
