@@ -1511,6 +1511,9 @@ function saveForLater(id){
   armNotice(nid);
 }
 
+// A split item only needs the choice modal while 2+ of its delivery lines remain in the cart.
+function isMultiSplit(p){ return !!(p && p.splitKey) && cart.filter(x=>!x.notice && x.splitKey===p.splitKey).length > 1; }
+
 // Split-delivery Save-for-Later modal: choose to save just this delivery's units or all units.
 function openSplitSaveModal(id){
   const p = findCart(id);
@@ -1610,7 +1613,7 @@ function loginSuccess(){
   const b=$('fabLoggedOut'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); }
   closeLoginModal();
   const id = pendingSaveId; pendingSaveId = null;
-  if(id){ const p=findCart(id); if(p){ if(p.splitKey) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id)); } }
+  if(id){ const p=findCart(id); if(p){ if(isMultiSplit(p)) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id)); } }
 }
 function doSignup(){
   const name=($('suName')||{}).value||'', email=($('suEmail')||{}).value||'';
@@ -1711,7 +1714,7 @@ document.addEventListener('click', e=>{
     case 'togglebox': { const p=findCart(id); if(p){p.boxOpen=!p.boxOpen; renderAll();} break; }
     case 'save': {
       if(!loggedIn){ pendingSaveId = id; openLoginModal(); break; }
-      const p=findCart(id); if(p && p.splitKey) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id));
+      const p=findCart(id); if(isMultiSplit(p)) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id));
       break; }
     case 'closeSplitModal': closeSplitModal(); break;
     case 'confirmSplitSave': confirmSplitSave(); break;
