@@ -104,8 +104,8 @@
   .titlebar h1{ font-size:34px; font-weight:700; color:var(--text); line-height:1.2; }
   .cart-control{ display:flex; align-items:center; gap:18px; font-weight:700; font-size:16px; flex-wrap:wrap; }
   .cart-control .cc-div{ width:1px; align-self:stretch; background:#DCDCDC; }
-  .cart-control .cc-sfl{ display:inline-flex; align-items:center; gap:8px; }
-  .cart-control .cc-sfl .cc-badge{ display:inline-flex; }
+  .cart-control .cc-sfl{ position:relative; display:inline-flex; align-items:center; }
+  .cart-control .cc-sfl .cc-badge{ position:absolute; bottom:100%; left:-16px; margin-bottom:-4px; display:inline-flex; }
   .cart-control .cc-sfl .cc-badge svg{ display:block; }
 
   /* ---------------- Layout ---------------- */
@@ -229,7 +229,7 @@
   .icon-btn .ico{ font-size:16px; }
   .save-link{ font-size:13px; font-weight:700; color:var(--blue); white-space:nowrap; }
   .pactions .save-wrap{ position:relative; display:inline-flex; align-items:center; }
-  .pactions .item-newbadge{ display:none; position:absolute; bottom:100%; left:-20px; margin-bottom:6px; }
+  .pactions .item-newbadge{ display:none; position:absolute; bottom:100%; left:-16px; margin-bottom:0px; }
   .pactions .item-newbadge svg{ display:block; }
   /* Badge V2 (proto toggle): move the NEW! badge from the header link to the first cart line */
   body.badge-v2 .cart-control .cc-sfl .cc-badge{ display:none; }
@@ -621,6 +621,8 @@
     .rep{ display:none; }
     .search-field{ min-width:0; }
     .cart-control{ display:none; }
+    /* header controls hide here — move the NEW! badge onto the first cart tile (Figma 615:8488) */
+    .pcard.first-card .pactions .item-newbadge{ display:block; }
 
     /* sticky checkout bar appears; proto-tools lifts above it; leave room at page end */
     .checkout-bar{ display:flex; }
@@ -806,7 +808,7 @@
 <div class="titlebar">
   <h1>Your Cart</h1>
   <div class="cart-control">
-    <a href="#savedWrap" class="cc-sfl"><span class="cc-badge"><svg width="40" height="16" viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="16" rx="4" fill="#F15C02"/><path d="M7.10852 11.5V3.8H8.59352L11.4095 8.849H11.4315V3.8H12.9275V11.5H11.4645L8.61552 6.451H8.59352V11.5H7.10852ZM14.6925 11.5V3.8H19.5655V5.175H16.1775V6.902H19.2575V8.222H16.1775V10.125H19.5655V11.5H14.6925ZM21.9979 11.5L20.5019 3.8H22.0089L22.9989 9.036H23.0319L24.8029 3.8H25.5509L27.3219 9.036H27.3549L28.3449 3.8H29.8189L28.3229 11.5H26.7829L25.1989 6.715H25.1329L23.5379 11.5H21.9979ZM31.2074 8.959V3.8H32.6924V8.959H31.2074ZM31.1414 11.5V9.938H32.7804V11.5H31.1414Z" fill="white"/></svg></span>Save for Later</a><span class="cc-div"></span><a href="#">View Cart ID</a><span class="cc-div"></span><a href="#">Save Cart</a><span class="cc-div"></span><a href="#">Save As Quote</a>
+    <a href="#savedWrap" class="cc-sfl"><span class="cc-badge"><svg width="30" height="15" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.25195 7.87402H4.74268L2.61572 2.5835L1.50928 7.87402H0L1.64355 0H3.1582L5.29053 5.26904L6.3916 0H7.89551L6.25195 7.87402ZM7.90625 7.87402L9.5498 0H15.3882L15.1143 1.31592H10.8979L10.522 3.10449H14.5986L14.3247 4.42041H10.248L9.75391 6.55811H14.3354L14.0562 7.87402H7.90625ZM22.7305 7.87402H21.0923L20.915 2.11621L18.0469 7.87402H16.3765L16.0811 0H17.6655L17.7354 5.51074L20.437 0H22.1934L22.376 5.45166L24.9702 0H26.5386L22.7305 7.87402ZM27.4248 5.87061H26.5762L27.0596 1.85303L27.4463 0H29.063L28.6494 1.99268L27.4248 5.87061ZM26.168 6.38623H27.6934L27.3818 7.87402H25.8564L26.168 6.38623Z" fill="#F15C02"/></svg></span>Save for Later</a><span class="cc-div"></span><a href="#">View Cart ID</a><span class="cc-div"></span><a href="#">Save Cart</a><span class="cc-div"></span><a href="#">Save As Quote</a>
   </div>
 </div>
 
@@ -910,7 +912,7 @@ const ART = {
 };
 
 /* NEW! badge (Figma "Product Card Badge") — reused in header + item line */
-const NEW_BADGE_SVG = `<svg width="40" height="16" viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="40" height="16" rx="4" fill="#F15C02"/><path d="M7.10852 11.5V3.8H8.59352L11.4095 8.849H11.4315V3.8H12.9275V11.5H11.4645L8.61552 6.451H8.59352V11.5H7.10852ZM14.6925 11.5V3.8H19.5655V5.175H16.1775V6.902H19.2575V8.222H16.1775V10.125H19.5655V11.5H14.6925ZM21.9979 11.5L20.5019 3.8H22.0089L22.9989 9.036H23.0319L24.8029 3.8H25.5509L27.3219 9.036H27.3549L28.3449 3.8H29.8189L28.3229 11.5H26.7829L25.1989 6.715H25.1329L23.5379 11.5H21.9979ZM31.2074 8.959V3.8H32.6924V8.959H31.2074ZM31.1414 11.5V9.938H32.7804V11.5H31.1414Z" fill="white"/></svg>`;
+const NEW_BADGE_SVG = `<svg width="30" height="15" viewBox="0 0 30 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.25195 7.87402H4.74268L2.61572 2.5835L1.50928 7.87402H0L1.64355 0H3.1582L5.29053 5.26904L6.3916 0H7.89551L6.25195 7.87402ZM7.90625 7.87402L9.5498 0H15.3882L15.1143 1.31592H10.8979L10.522 3.10449H14.5986L14.3247 4.42041H10.248L9.75391 6.55811H14.3354L14.0562 7.87402H7.90625ZM22.7305 7.87402H21.0923L20.915 2.11621L18.0469 7.87402H16.3765L16.0811 0H17.6655L17.7354 5.51074L20.437 0H22.1934L22.376 5.45166L24.9702 0H26.5386L22.7305 7.87402ZM27.4248 5.87061H26.5762L27.0596 1.85303L27.4463 0H29.063L28.6494 1.99268L27.4248 5.87061ZM26.168 6.38623H27.6934L27.3818 7.87402H25.8564L26.168 6.38623Z" fill="#F15C02"/></svg>`;
 
 /* ---------- state ---------- */
 let cart = [
