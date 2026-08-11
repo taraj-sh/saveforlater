@@ -272,8 +272,8 @@
 
   /* Saved card — grid: [chk][thumb][info][price], Move-to-Cart under info (Figma node 66:5550) */
   .scard{ position:relative; display:grid; align-items:start; column-gap:24px; row-gap:16px;
-          grid-template-columns:auto auto minmax(0,1fr) auto;
-          grid-template-areas:"chk thumb info price" "chk thumb move price";
+          grid-template-columns:auto minmax(0,1fr) auto;
+          grid-template-areas:"thumb info price" "thumb move price";
           padding:48px 32px 28px; border-bottom:1px solid var(--border); }
   .scard:last-child{ border-bottom:0; }
   .scard > .chk{ grid-area:chk; align-self:center; }
@@ -435,6 +435,84 @@
   .price-msg .pm-close svg{ width:15px; height:15px; display:block; }
   .price-msg .pm-close:hover{ color:var(--text); }
 
+  /* ---- Save-for-Later choice modal (Figma 615:8708) ---- */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000;
+                  display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal-overlay[hidden]{ display:none; }
+  .modal{ width:100%; max-width:500px; background:#fff; box-shadow:0 14px 44px rgba(0,0,0,.3);
+          overflow:hidden; font-family:var(--font); }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; gap:16px;
+               background:#F7F4F1; padding:18px 24px; border-bottom:1px solid var(--border); }
+  .modal-head h3{ font-size:22px; font-weight:700; color:var(--text); }
+  .modal-x{ width:22px; height:22px; color:#555; display:inline-flex; align-items:center; justify-content:center;
+            background:none; border:0; cursor:pointer; }
+  .modal-x svg{ width:20px; height:20px; display:block; }
+  .modal-x:hover{ color:var(--text); }
+  .modal-body{ padding:24px; }
+  .modal-prod{ display:flex; align-items:center; gap:16px; }
+  .modal-thumb{ width:56px; height:56px; flex:none; }
+  .modal-prod .pname{ font-size:16px; font-weight:700; color:var(--blue); line-height:1.2; }
+  .modal-prod .pmeta{ font-size:14px; margin-top:3px; display:flex; align-items:center; gap:8px; }
+  .modal-divider{ height:1px; background:var(--border); margin:18px 0; }
+  .modal-q{ font-size:15px; color:var(--text); line-height:1.5; margin-bottom:12px; }
+  .modal-opt{ display:flex; align-items:center; gap:10px; padding:7px 0; font-size:15px;
+              font-weight:700; color:var(--text); cursor:pointer; }
+  .modal-opt input{ width:18px; height:18px; accent-color:var(--blue); cursor:pointer; flex:none; }
+  .modal-foot{ display:flex; align-items:center; gap:28px; padding:18px 24px; border-top:1px solid var(--border); }
+  .modal-save{ background:var(--orange); box-shadow:inset 0 -2px 0 rgba(0,0,0,.25); color:#fff;
+               font-size:14px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+               padding:14px 28px; border:0; cursor:pointer; }
+  .modal-save:hover{ background:var(--orange-550); }
+  .modal-cancel{ color:var(--link); font-size:15px; font-weight:700; background:none; border:0; cursor:pointer; }
+  .modal-cancel:hover{ text-decoration:underline; }
+  @media (max-width:480px){
+    .modal-head h3{ font-size:20px; }
+    .modal-foot{ flex-direction:column-reverse; align-items:stretch; gap:12px; }
+    .modal-save{ width:100%; }
+  }
+
+  /* ---- Login / register gate (Figma 915:15061) ---- */
+  .login-modal{ max-width:760px; }
+  .login-head{ background:#fff; align-items:baseline; }
+  .login-head h3{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .login-sub{ font-size:14px; font-weight:400; color:var(--text); }
+  .login-body{ padding:24px; }
+  .login-cols{ display:flex; gap:22px; align-items:flex-start; }
+  .login-create{ flex:1 1 0; min-width:0; border:1px solid var(--border); padding:22px; }
+  .login-have{ flex:1 1 0; min-width:0; background:#EAF3FB; padding:22px; }
+  .login-forgot{ display:block; text-align:right; margin-top:12px; font-size:14px; font-weight:700; color:var(--link); }
+  .login-forgot:hover{ text-decoration:underline; }
+  .login-body h4{ font-size:22px; font-weight:700; color:var(--text); margin-bottom:16px; }
+  .login-signin{ max-width:420px; }
+  .fld{ display:block; margin-bottom:14px; }
+  .fld > span{ display:block; font-size:14px; font-weight:700; color:var(--text); margin-bottom:6px; }
+  .fld input[type=text], .fld input[type=email], .fld input[type=password]{
+    width:100%; height:44px; border:1px solid var(--border-strong); padding:0 12px;
+    font-family:var(--font); font-size:15px; color:var(--text); outline:none; }
+  .fld input:focus{ border-color:var(--blue); }
+  .fld .pw{ position:relative; display:block; }
+  .fld .pw input{ padding-right:52px; }
+  .fld .pw-show{ position:absolute; right:12px; top:50%; transform:translateY(-50%);
+                 font-size:13px; font-weight:700; color:var(--link); cursor:pointer; }
+  .chkline{ display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--text); margin:6px 0 16px; cursor:pointer; }
+  .chkline input{ width:16px; height:16px; accent-color:var(--text); margin-top:1px; flex:none; }
+  .recaptcha{ display:flex; align-items:center; gap:12px; border:1px solid var(--border-strong);
+              background:#F9F9F9; padding:12px 14px; margin-bottom:16px; max-width:304px; }
+  .recaptcha .rc-box{ width:26px; height:26px; border:2px solid #C4C4C4; background:#fff; flex:none; }
+  .recaptcha .rc-label{ font-size:14px; color:var(--text); flex:1; }
+  .recaptcha .rc-logo{ font-size:10px; color:#9A9A9A; text-align:center; line-height:1.3; }
+  .login-signup{ width:100%; height:46px; background:#4186AD; color:#fff; border:0; cursor:pointer;
+                 font-size:14px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .login-signup:hover{ background:#356f90; }
+  .login-signin-btn{ width:100%; height:46px; background:#fff; border:1px solid var(--blue); color:var(--blue);
+                     cursor:pointer; font-size:14px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .login-signin-btn:hover{ background:#F2F8FC; }
+  .login-back{ display:inline-block; margin-top:14px; font-size:14px; font-weight:700; color:var(--link); cursor:pointer; }
+  @media (max-width:640px){
+    .login-cols{ flex-direction:column; }
+    .login-have{ align-self:stretch; }
+  }
+
   /* In-place move confirmation (replaces the row where an item was saved/moved) */
   .movenotice{ display:flex; align-items:flex-start; gap:12px; padding:22px 24px; overflow:hidden;
                background:var(--white); border:1px solid var(--border); border-left:4px solid var(--green);
@@ -563,12 +641,11 @@
     /* Save for Later | trash stays pinned to the card's top-right at every breakpoint (Figma) */
     .pactions{ right:16px; top:14px; margin-top:0; width:auto; }
 
-    /* saved card stacks (matches phone tile 289:15671): checkbox rail, name row, price on its own line, full-width Move to Cart */
-    .scard{ grid-template-columns:auto auto minmax(0,1fr);
-            grid-template-areas:"chk thumb info" ".   price price" ".   move move";
+    /* saved card stacks (matches phone tile 289:15671): name row, price on its own line, full-width Move to Cart */
+    .scard{ grid-template-columns:auto minmax(0,1fr);
+            grid-template-areas:"thumb info" "price price" "move move";
             row-gap:12px; column-gap:16px; padding:44px 16px 18px; }
-    .scard > .chk{ align-self:center; }
-    .scard > .thumb{ align-self:center; }
+    .scard > .thumb{ align-self:start; }
     .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
     .scard > .slinks{ justify-self:stretch; }
     .scard > .slinks .movecart-btn{ width:150px; }
@@ -614,10 +691,10 @@
     .saved-bulk, .saved-filter{ padding-left:16px; padding-right:16px; }
 
     /* saved card stacks on phones: info row, then price, then a full Move-to-Cart button */
-    .scard{ grid-template-columns:auto auto minmax(0,1fr);
-            grid-template-areas:"chk thumb info" ".   price price" ".   move move";
+    .scard{ grid-template-columns:auto minmax(0,1fr);
+            grid-template-areas:"thumb info" "price price" "move move";
             row-gap:12px; padding:40px 16px 16px; column-gap:14px; }
-    .scard > .thumb{ align-self:center; }
+    .scard > .thumb{ align-self:start; }
     .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
     .scard > .slinks{ justify-self:stretch; }
     .scard > .slinks .movecart-btn{ width:150px; }
@@ -785,8 +862,34 @@
 </div>
 
 <div class="toast" id="toast"><span class="ico">check_circle</span><span id="toastMsg"></span><button id="toastUndo" style="display:none">Undo</button></div>
+
+<!-- Save-for-Later choice modal for split-delivery items (Figma 615:8708) -->
+<div class="modal-overlay" id="splitModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="splitModalTitle">
+    <div class="modal-head">
+      <h3 id="splitModalTitle">Save for Later</h3>
+      <button class="modal-x" data-act="closeSplitModal" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4 L16 16 M16 4 L4 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="modal-body" id="splitModalBody"></div>
+    <div class="modal-foot">
+      <button class="modal-save" data-act="confirmSplitSave">SAVE FOR LATER</button>
+      <button class="modal-cancel" data-act="closeSplitModal">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Logged-out gate: log in / register to Save for Later (Figma 915:15061) -->
+<div class="modal-overlay" id="loginModal" hidden>
+  <div class="modal login-modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-head login-head">
+      <h3 id="loginTitle">Save for Later <span class="login-sub">Please log in or register</span></h3>
+      <button class="modal-x" data-act="closeLogin" aria-label="Close"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4 L16 16 M16 4 L4 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="login-body" id="loginBody"></div>
+  </div>
+</div>
 <div class="proto-tools" role="group" aria-label="Prototype controls">
-  <button id="fabEmpty" type="button" aria-pressed="false"><span class="ico">bookmark</span>Empty SFL</button>
+  <button id="fabLoggedOut" type="button" aria-pressed="false">Logged Out</button>
   <span class="pt-sep"></span>
   <button id="fabUndo" type="button" disabled><span class="ico">undo</span>Undo</button>
   <button id="fabReset" type="button"><span class="ico">restart_alt</span>Reset</button>
@@ -814,8 +917,8 @@ let cart = [
   { id:'c1', name:'007 Cast Iron Circulator, 1/25 HP', sku:'BLFF050', brand:'Bluefin', price:40.00, was:46.00, qty:2, art:'pump', delivery:'Tomorrow, May 11', split:false, stockup:false },
   { id:'c2', name:'1/2" x 3/8" Copper 90° Elbow', sku:'31272', brand:'Elkhart', price:1.22, was:1.85, qty:102, art:'elbow', delivery:'Tomorrow, May 11', split:true, stockup:true },
   { id:'c3', name:'PEX-A 1/2" Stainless Steel Cinch Clamp', sku:'A1140750', brand:'Uponor (Wirsbo)', price:8.00, was:9.40, qty:52, art:'clamp', delivery:'Thu, May 13', split:false, stockup:true },
-  { id:'cs1', name:'3/4" hePEX - (100 ft. coil)', sku:'A1140750', brand:'Uponor (Wirsbo)', price:40.00, was:null, qty:5, art:'coil', delivery:'Mon, Jul 22', split:false, stockup:false, splitKey:'hepex', splitIdx:1, splitTotal:2, caseQty:20, fulfilled:true },
-  { id:'cs2', name:'3/4" hePEX - (100 ft. coil)', sku:'A1140750', brand:'Uponor (Wirsbo)', price:40.00, was:null, qty:5, art:'coil', delivery:'Wed, Jul 25 - Tue, Aug 4', split:false, stockup:false, splitKey:'hepex', splitIdx:2, splitTotal:2, caseQty:20, fulfilled:true },
+  { id:'cs1', name:'3/4" hePEX - (100 ft. coil)', sku:'A1140750', brand:'Uponor (Wirsbo)', price:40.00, was:null, qty:10, art:'coil', delivery:'Mon, Jul 22', split:false, stockup:false, splitKey:'hepex', splitIdx:1, splitTotal:2, caseQty:20, fulfilled:true },
+  { id:'cs2', name:'3/4" hePEX - (100 ft. coil)', sku:'A1140750', brand:'Uponor (Wirsbo)', price:40.00, was:null, qty:10, art:'coil', delivery:'Wed, Jul 25 - Tue, Aug 4', split:false, stockup:false, splitKey:'hepex', splitIdx:2, splitTotal:2, caseQty:20, fulfilled:true },
 ];
 
 let saved = [
@@ -897,9 +1000,12 @@ function resetPrototype(){
   loadingIds.clear();
   stopLazyLoad();
   sflEmptyPreview = false;
-  { const b=$('fabEmpty'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); } }
+  loggedIn = true; loginView = 'register'; pendingSaveId = null;
+  { const b=$('fabLoggedOut'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); } }
   priceMsgDismissed = false;
   priceMsgExpanded = false;
+  closeSplitModal();
+  closeLoginModal();
   undoFn = null;
   $('toast').classList.remove('show');
   renderAll();
@@ -908,12 +1014,13 @@ function resetPrototype(){
 $('toastUndo').onclick = doUndo;
 $('fabUndo').onclick = doUndo;
 $('fabReset').onclick = resetPrototype;
-$('fabEmpty').onclick = ()=>{
-  sflEmptyPreview = !sflEmptyPreview;
-  const b = $('fabEmpty');
-  b.setAttribute('aria-pressed', sflEmptyPreview ? 'true' : 'false');
-  b.classList.toggle('on', sflEmptyPreview);
-  renderSaved();
+$('fabLoggedOut').onclick = ()=>{
+  loggedIn = !loggedIn;
+  const out = !loggedIn;
+  const b = $('fabLoggedOut');
+  b.setAttribute('aria-pressed', out ? 'true' : 'false');
+  b.classList.toggle('on', out);
+  if(loggedIn) closeLoginModal();
 };
 let badgeV2 = false;
 $('fabBadgeV2').onclick = ()=>{
@@ -1190,9 +1297,14 @@ function dealMarkup(p){
 
 let priceMsgDismissed = false;
 let priceMsgExpanded = false;
+let splitModalId = null;
+let loggedIn = true;          // proto toggle via the "Logged Out" control
+let loginView = 'register';   // login modal view: 'register' | 'signin'
+let pendingSaveId = null;     // Save-for-Later action to resume after logging in
 function renderPriceMsg(){
   const el = $('priceMsg');
   if(!el) return;
+  el.innerHTML = ''; el.style.display = 'none'; return;   // price-change banner removed from this build
   const changed = saved.filter(s=>s.change && s.available && s.prevPrice != null);
   if(priceMsgDismissed || changed.length === 0){ el.innerHTML = ''; el.style.display = 'none'; return; }
   el.style.display = '';
@@ -1260,7 +1372,6 @@ function renderSaved(){
     if(p.notice) return noticeHTML(p);
     return `<div class="scard${loadingIds.has(p.id)?' loading':''}" data-id="${p.id}">
       ${loadingIds.has(p.id)?SPIN:''}
-      <button class="chk" role="checkbox" aria-checked="${p.checked?'true':'false'}" data-act="check" data-id="${p.id}" ${!p.available?'disabled':''} aria-label="Select item"><span class="ico">check</span></button>
       <div class="thumb">${thumbHTML(p)}</div>
       <div class="pinfo">
         <div class="pname"><a href="#">${esc(p.name)}</a></div>
@@ -1282,7 +1393,6 @@ function renderSaved(){
   }).join('');
 
   box.innerHTML = `
-    ${savedControlsHTML()}
     ${rows}
     ${remaining>0 ? (sflLoading
         ? `<div class="sfl-sentinel"><span class="sfl-spinner"></span></div>`
@@ -1399,6 +1509,122 @@ function saveForLater(id){
   armNotice(nid);
 }
 
+// Split-delivery Save-for-Later modal: choose to save just this delivery's units or all units.
+function openSplitSaveModal(id){
+  const p = findCart(id);
+  if(!p || !p.splitKey) return;
+  splitModalId = id;
+  const sibs = cart.filter(x=>!x.notice && x.splitKey===p.splitKey);
+  const total = sibs.reduce((n,x)=>n+x.qty,0);
+  $('splitModalBody').innerHTML = `
+    <div class="modal-prod">
+      <div class="thumb modal-thumb">${thumbHTML(p)}</div>
+      <div>
+        <div class="pname"><a href="#">${esc(p.name)}</a></div>
+        <div class="pmeta"><span class="sku">SKU: <b>${esc(p.sku)}</b></span><span class="pipe">|</span><span class="brand">${esc(p.brand)}</span></div>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <p class="modal-q">You have ${total} units in your cart, how many would you like to Save for Later?</p>
+    <label class="modal-opt"><input type="radio" name="splitSaveScope" value="one" checked> <span>${p.qty} of ${total} units</span></label>
+    <label class="modal-opt"><input type="radio" name="splitSaveScope" value="all"> <span>All ${total} units</span></label>`;
+  const m = $('splitModal');
+  m.hidden = false;
+  paintIcons(m);
+}
+function closeSplitModal(){ const m=$('splitModal'); if(m) m.hidden = true; splitModalId = null; }
+function confirmSplitSave(){
+  const id = splitModalId;
+  if(!id){ closeSplitModal(); return; }
+  const p = findCart(id);
+  const sel = document.querySelector('input[name="splitSaveScope"]:checked');
+  const scope = sel ? sel.value : 'one';
+  const key = p ? p.splitKey : null;
+  closeSplitModal();
+  if(scope==='all' && key) withCardSpinner(id, ()=>saveSplitAll(key));
+  else withCardSpinner(id, ()=>saveForLater(id));
+}
+// Save both split-delivery lines together as one combined saved entry (one confirmation).
+function saveSplitAll(splitKey){
+  const firstIdx = cart.findIndex(pp=>!pp.notice && pp.splitKey===splitKey);
+  const lines = cart.filter(pp=>!pp.notice && pp.splitKey===splitKey);
+  if(!lines.length) return;
+  const name = lines[0].name;
+  const totalQty = lines.reduce((n,pp)=>n+pp.qty,0);
+  cart = cart.filter(pp=> !(!pp.notice && pp.splitKey===splitKey));
+  let sib = saved.find(s=>!s.notice && s.splitKey===splitKey);
+  lines.forEach(item=>{
+    const part = { delivery:item.delivery, qty:item.qty, splitIdx:item.splitIdx };
+    if(sib){ sib.qty += item.qty; sib.splitParts.push(part); }
+    else { sib = { id:item.id, name:item.name, sku:item.sku, brand:item.brand, price:item.price,
+            change:null, qty:item.qty, art:item.art, cat:item.cat||'PEX', available:true, checked:false,
+            splitKey:item.splitKey, splitTotal:item.splitTotal, fulfilled:item.fulfilled, caseQty:item.caseQty, splitParts:[part] };
+      saved.unshift(sib); }
+  });
+  const nid='n'+Date.now()+Math.floor(Math.random()*1000);
+  cart.splice(Math.max(0,firstIdx),0,{ notice:true, id:nid, name, qty:totalQty, dir:'sfl', delivery:lines[0].delivery });
+  renderAll(); armNotice(nid);
+}
+
+// Logged-out gate: show a login/register modal; any text logs you in (prototype only).
+function openLoginModal(){ loginView='register'; renderLoginModal(); const m=$('loginModal'); if(m) m.hidden=false; }
+function closeLoginModal(){ const m=$('loginModal'); if(m) m.hidden=true; }
+function renderLoginModal(){
+  const body = $('loginBody'); if(!body) return;
+  if(loginView==='signin'){
+    body.innerHTML = `<div class="login-cols">
+      <div class="login-create login-noacct">
+        <h4>Don&rsquo;t have an account</h4>
+        <button class="login-signin-btn" data-act="showRegister">SIGN UP</button>
+      </div>
+      <div class="login-have login-signinpanel">
+        <h4>Sign in to your account</h4>
+        <label class="fld"><span>Email Address:</span><input type="email" id="siEmail" autocomplete="off"></label>
+        <label class="fld"><span>Password:</span><input type="password" id="siPass" autocomplete="off"></label>
+        <button class="login-signup" data-act="doSignin">SIGN IN &amp; CONTINUE</button>
+        <a class="login-forgot" href="#">Forgot Password?</a>
+      </div>
+    </div>`;
+  } else {
+    body.innerHTML = `<div class="login-cols">
+      <div class="login-create">
+        <h4>Create an account</h4>
+        <label class="fld"><span>First and Last Name</span><input type="text" id="suName" autocomplete="off"></label>
+        <label class="fld"><span>Email Address:</span><input type="email" id="suEmail" autocomplete="off"></label>
+        <label class="fld"><span>Create Password:</span><span class="pw"><input type="password" id="suPass" placeholder="Must be at least 8 characters" autocomplete="off"><a class="pw-show" data-act="togglePw" data-for="suPass" href="#">show</a></span></label>
+        <label class="chkline"><input type="checkbox" checked> Send me exclusive discounts (you can always unsubscribe).</label>
+        <div class="recaptcha"><span class="rc-box"></span><span class="rc-label">I'm not a robot</span><span class="rc-logo">reCAPTCHA</span></div>
+        <button class="login-signup" data-act="doSignup">SIGN UP</button>
+      </div>
+      <div class="login-have">
+        <h4>Already have an account?</h4>
+        <button class="login-signin-btn" data-act="showSignin">SIGN IN</button>
+      </div>
+    </div>`;
+  }
+}
+function loginSuccess(){
+  loggedIn = true;
+  const b=$('fabLoggedOut'); if(b){ b.setAttribute('aria-pressed','false'); b.classList.remove('on'); }
+  closeLoginModal();
+  const id = pendingSaveId; pendingSaveId = null;
+  if(id){ const p=findCart(id); if(p){ if(p.splitKey) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id)); } }
+}
+function doSignup(){
+  const name=($('suName')||{}).value||'', email=($('suEmail')||{}).value||'';
+  if(name.trim() && email.trim()) loginSuccess();   // proto: any text in the two fields
+}
+function doSignin(){
+  const email=($('siEmail')||{}).value||'', pass=($('siPass')||{}).value||'';
+  if(email.trim() && pass.trim()) loginSuccess();    // proto: any text in both fields
+}
+function togglePw(link){
+  const inp=$(link.dataset.for); if(!inp) return;
+  const show = inp.type==='password';
+  inp.type = show ? 'text' : 'password';
+  link.textContent = show ? 'hide' : 'show';
+}
+
 function moveToCart(id){
   const i = saved.findIndex(p=>p.id===id && !p.notice);
   if(i<0 || !saved[i].available) return;
@@ -1481,7 +1707,18 @@ document.addEventListener('click', e=>{
     case 'incbox': { const p=findCart(id); if(p){p.boxes=(p.boxes||0)+1; renderAll();} break; }
     case 'decbox': { const p=findCart(id); if(p){p.boxes=Math.max(0,(p.boxes||0)-1); renderAll();} break; }
     case 'togglebox': { const p=findCart(id); if(p){p.boxOpen=!p.boxOpen; renderAll();} break; }
-    case 'save': withCardSpinner(id, ()=>saveForLater(id)); break;
+    case 'save': {
+      if(!loggedIn){ pendingSaveId = id; openLoginModal(); break; }
+      const p=findCart(id); if(p && p.splitKey) openSplitSaveModal(id); else withCardSpinner(id, ()=>saveForLater(id));
+      break; }
+    case 'closeSplitModal': closeSplitModal(); break;
+    case 'confirmSplitSave': confirmSplitSave(); break;
+    case 'closeLogin': closeLoginModal(); break;
+    case 'showSignin': loginView='signin'; renderLoginModal(); break;
+    case 'showRegister': loginView='register'; renderLoginModal(); break;
+    case 'doSignup': doSignup(); break;
+    case 'doSignin': doSignin(); break;
+    case 'togglePw': togglePw(t); break;
     case 'remove': withCardSpinner(id, ()=>removeCart(id)); break;
     case 'removeSplit': removeSplit(t.dataset.key); break;
     case 'tocart': withCardSpinner(id, ()=>moveToCart(id)); break;
@@ -1545,6 +1782,15 @@ document.addEventListener('pointerup', ()=>{
 
 // Placeholder links (product titles, logo, nav) shouldn't navigate in the prototype
 document.addEventListener('click', e=>{ const a=e.target.closest('a[href="#"]'); if(a) e.preventDefault(); });
+
+// Close the split-save modal on backdrop click or Esc
+$('splitModal').addEventListener('click', e=>{ if(e.target.id==='splitModal') closeSplitModal(); });
+$('loginModal').addEventListener('click', e=>{ if(e.target.id==='loginModal') closeLoginModal(); });
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Escape') return;
+  if(!$('splitModal').hidden) closeSplitModal();
+  if(!$('loginModal').hidden) closeLoginModal();
+});
 
 renderAll();
 refreshUndo();
