@@ -294,7 +294,12 @@
                          letter-spacing:.02em; text-transform:uppercase; line-height:1; cursor:pointer;
                          transition:background .12s ease; }
   .slinks .movecart-btn:hover{ background:#EFF5FD; }
+  .slinks .movecart-btn:disabled{ background:var(--white); border-color:var(--border); color:#B0B0B0; cursor:default; }
+  .slinks .movecart-btn:disabled:hover{ background:var(--white); }
   .unavail-note{ font-size:12px; font-weight:700; color:var(--muted); margin-top:8px; }
+  .unavail-note.zip-note{ font-weight:400; color:var(--text); }
+  /* tighter gap between the "Not available for {zip}" copy and the disabled Move to Cart button — this tile only */
+  .scard.zip-unavail{ row-gap:6px; }
   /* volume-discount treatments in the saved tray (read-only, no steppers) */
   /* Stock Up & Save — fieldset box with legends cutting the border (matches cart) */
   .su-box{ position:relative; display:flex; justify-content:space-between; gap:20px;
@@ -922,7 +927,7 @@ let cart = [
 ];
 
 let saved = [
-  { id:'s1', name:'Taco 007-F5 Cast Iron Circulator Pump', sku:'BLFF050', brand:'Bluefin', price:48.00, prevPrice:52.00, change:'down', qty:2, art:'pump', cat:'Heating', available:true, stockup:false, checked:false },
+  { id:'s1', name:'Taco 007-F5 Cast Iron Circulator Pump', sku:'BLFF050', brand:'Bluefin', price:48.00, prevPrice:52.00, change:'down', qty:2, art:'pump', cat:'Heating', available:true, stockup:false, checked:false, zipUnavail:true },
   { id:'s2', name:'3/4" Type L Hard Copper Pipe, 10 ft', sku:'CP34L10', brand:'Mueller', price:31.00, prevPrice:26.10, change:'up', qty:1, art:'pipe', cat:'Pipe', available:true, stockup:false, checked:false },
   { id:'s3', name:'1/2" Brass Ball Valve, FIP × FIP', sku:'BV12FF', brand:'Matco-Norca', price:8.00, was:9.40, change:null, qty:1, art:'valve', cat:'Valves', available:true, checked:false,
     deal:{ type:'stock', tiers:[{r:'2–3', each:7.00},{r:'4+', each:6.00}], perCase:10 } },
@@ -1290,6 +1295,7 @@ function dealMarkup(p){
 let priceMsgDismissed = false;
 let priceMsgExpanded = false;
 let splitModalId = null;
+const SHIP_ZIP = '11743';     // ship-to zip shown for the per-location availability state
 let loggedIn = true;          // proto toggle via the "Logged Out" control
 let loginView = 'register';   // login modal view: 'register' | 'signin'
 let pendingSaveId = null;     // Save-for-Later action to resume after logging in
@@ -1362,13 +1368,13 @@ function renderSaved(){
   const remaining = realTotal - shownReal;
   const rows = visible.map(p=>{
     if(p.notice) return noticeHTML(p);
-    return `<div class="scard${loadingIds.has(p.id)?' loading':''}" data-id="${p.id}">
+    return `<div class="scard${loadingIds.has(p.id)?' loading':''}${p.zipUnavail?' zip-unavail':''}" data-id="${p.id}">
       ${loadingIds.has(p.id)?SPIN:''}
       <div class="thumb">${thumbHTML(p)}</div>
       <div class="pinfo">
         <div class="pname"><a href="#">${esc(p.name)}</a></div>
         ${metaLine(p)}
-        ${!p.available?`<div class="unavail-note">No longer available</div>`:''}
+        ${!p.available?`<div class="unavail-note">No longer available</div>`:(p.zipUnavail?`<div class="unavail-note zip-note">Not available for <b>${SHIP_ZIP}</b></div>`:'')}
       </div>
       <div class="sprice">
         ${!p.available
@@ -1376,9 +1382,11 @@ function renderSaved(){
           : `<div class="sqtyprice"><span class="sqty">Qty ${p.qty}</span><span class="pipe">|</span><span class="amt">${money(p.price)}</span><span class="unit">each</span></div>${p.deal ? dealMarkup(p) : priceChip(p)}`}
       </div>
       <div class="slinks">
-        ${p.available
-          ? `<button class="movecart-btn" data-act="tocart" data-id="${p.id}">Move to Cart</button>`
-          : `<button class="replace" data-act="replace" data-id="${p.id}">Find a replacement</button>`}
+        ${!p.available
+          ? `<button class="replace" data-act="replace" data-id="${p.id}">Find a replacement</button>`
+          : (p.zipUnavail
+            ? `<button class="movecart-btn" disabled aria-disabled="true">Move to Cart</button>`
+            : `<button class="movecart-btn" data-act="tocart" data-id="${p.id}">Move to Cart</button>`)}
       </div>
       <button class="strash" data-act="sremove" data-id="${p.id}" aria-label="Remove saved item"><span class="ico">delete</span></button>
     </div>`;
