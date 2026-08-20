@@ -193,10 +193,7 @@
     .pcard.splitcard .sd-badge{ position:static; align-self:flex-start; }
     .pcard.splitcard .strash-abs{ right:12px; top:12px; }
   }
-  @media (max-width:767px){
-    .split-desktop{ display:none; }
-    .split-mobile{ display:block; }
-  }
+  /* Split-delivery items stay as separate per-delivery cards at every breakpoint (each keeps its own Save for Later link) */
   .stockup{ display:inline-flex; align-items:center; gap:4px; margin-top:10px;
             font-size:12px; font-weight:700; color:var(--text); }
   .stockup .chev{ color:var(--blue); font-size:15px; }
@@ -415,6 +412,27 @@
   .proto-tools button.on:hover{ background:#0a5c96; }
   .proto-tools .ico{ font-size:18px; }
 
+  /* Native app header — shown only inside the App preview (Figma 615:16409: 56px, #331811, 14px Bold title) */
+  .app-topbar{ display:none; position:sticky; top:0; z-index:50; align-items:center; justify-content:space-between;
+               height:56px; background:var(--dark-brown); padding:0 16px; }
+  .app-topbar .app-topbar-btn{ background:none; border:0; color:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+  .app-topbar .app-back .ico{ font-size:22px; }
+  .app-topbar .app-search .ico{ font-size:18px; }
+  .app-topbar .app-topbar-title{ position:absolute; left:50%; transform:translateX(-50%);
+                                  color:#fff; font-weight:700; font-size:14px; line-height:1.6; }
+
+  /* ---- App preview overlay: this prototype inside a phone mockup at 380px ---- */
+  .app-overlay{ position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,.62);
+                display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; }
+  .app-overlay[hidden]{ display:none; }
+  .app-bar{ display:flex; align-items:center; gap:16px; color:#fff; font-family:var(--font); font-size:13px; font-weight:700; }
+  .app-bar .app-close{ background:none; border:0; color:#fff; cursor:pointer; display:inline-flex; align-items:center; padding:2px; }
+  .app-bar .app-close svg{ width:18px; height:18px; display:block; }
+  .app-bar .app-close:hover{ color:#DCDCDC; }
+  .device{ background:#1E1E1E; padding:12px; border-radius:38px; box-shadow:0 24px 70px rgba(0,0,0,.55); flex:none; }
+  .device-screen{ position:relative; width:380px; height:min(824px,90vh); background:#fff; border-radius:26px; overflow:hidden; }
+  .device-frame{ width:380px; height:100%; border:0; display:block; background:#fff; }
+
   /* prototype ribbon */
   .ribbon{ background:#FFF7F0; border-bottom:1px solid #F2D9C2; color:#8a4b1f; font-size:12px;
            padding:6px 32px; text-align:center; }
@@ -471,10 +489,12 @@
   .modal-save:hover{ background:var(--orange-550); }
   .modal-cancel{ color:var(--link); font-size:15px; font-weight:700; background:none; border:0; cursor:pointer; }
   .modal-cancel:hover{ text-decoration:underline; }
-  @media (max-width:480px){
-    .modal-head h3{ font-size:20px; }
-    .modal-foot{ flex-direction:column-reverse; align-items:stretch; gap:12px; }
-    .modal-save{ width:100%; }
+  /* Split-delivery Save-for-Later modal docks to the bottom of the screen on mobile / app (bottom-sheet pattern) */
+  @media (max-width:767px){
+    #splitModal.modal-overlay{ align-items:flex-end; justify-content:center; padding:0; }
+    #splitModal .modal{ max-width:none; width:100%; }
+    #splitModal .modal-foot{ flex-direction:row; align-items:center; gap:20px; }
+    #splitModal .modal-save{ flex:1; width:auto; }
   }
 
   /* ---- Login / register gate (Figma 915:15061) ---- */
@@ -676,6 +696,9 @@
     .titlebar h1{ font-size:26px; }
     .page{ padding:16px 20px 40px; }
     .group-head, .group-body{ padding-left:16px; padding-right:16px; }
+    /* smaller delivery-group heading on mobile / app view */
+    .group-head .lab{ font-size:12px; }
+    .group-head .date{ font-size:16px; }
 
     /* price-change message → icon moves inline into the title, smaller type (Figma 768 / mobile) */
     .price-msg{ gap:8px; padding:16px 12px; margin-bottom:20px; align-items:flex-start; }
@@ -716,6 +739,12 @@
 <!-- ====================== MARKUP ====================== -->
 <div class="ribbon">Interactive design prototype — not connected to live cart data. For internal design validation.</div>
 
+<!-- Native app header (shown only inside the App preview; replaces the web header) — Figma 615:16409 -->
+<div class="app-topbar" aria-hidden="true">
+  <button class="app-topbar-btn app-back" aria-label="Back"><span class="ico">chevron_left</span></button>
+  <span class="app-topbar-title">Cart</span>
+  <button class="app-topbar-btn app-search" aria-label="Search"><span class="ico">search</span></button>
+</div>
 <header>
   <!-- utility bar -->
   <div class="utility">
@@ -903,6 +932,8 @@
   <span class="pt-sep"></span>
   <button id="fabUndo" type="button" disabled><span class="ico">undo</span>Undo</button>
   <button id="fabReset" type="button"><span class="ico">restart_alt</span>Reset</button>
+  <span class="pt-sep"></span>
+  <button id="fabApp" type="button"><span class="ico">smartphone</span>App</button>
 </div>
 
 <script>
@@ -1040,6 +1071,7 @@ const ICON_SVG = {
   check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>',
   check_circle: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.3 10.5 15.3 16.5 8.7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevron_right: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.6 6.2 7.2 7.6 11.6 12l-4.4 4.4 1.4 1.4L14.4 12z"/></svg>',
+  chevron_left: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.4 6.2 16.8 7.6 12.4 12l4.4 4.4-1.4 1.4L9.6 12z"/></svg>',
   arrow_downward: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 4h2v11.2l4.6-4.6L19 12l-7 7-7-7 1.4-1.4L11 15.2z"/></svg>',
   arrow_upward: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 20h-2V8.8l-4.6 4.6L5 12l7-7 7 7-1.4 1.4L13 8.8z"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="11" rx="1.5" fill="currentColor"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>',
@@ -1050,7 +1082,8 @@ const ICON_SVG = {
   shopping_cart_checkout: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 18a2 2 0 1 0 2 2 2 2 0 0 0-2-2zm10 0a2 2 0 1 0 2 2 2 2 0 0 0-2-2zM6.2 6l2.1 4.4h7l2.4-4.4zM4.3 4l.9 2H19a1 1 0 0 1 .9 1.4l-3.2 6a1 1 0 0 1-.9.6H8.1L7 16h12v2H6.5a1 1 0 0 1-.9-1.4L7 13.9 3.8 6H2V4z"/></svg>',
   bookmark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3a1 1 0 0 0-1 1v17l7-3 7 3V4a1 1 0 0 0-1-1z"/></svg>',
   restart_alt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v7"/><path d="M6.3 7.3A7 7 0 1 0 12 5"/></svg>',
-  undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h9a5 5 0 0 1 0 10h-1"/></svg>'
+  undo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7 4 12l5 5"/><path d="M4 12h9a5 5 0 0 1 0 10h-1"/></svg>',
+  smartphone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>'
 };
 function paintIcons(root){
   (root||document).querySelectorAll('.ico').forEach(el=>{
@@ -1797,10 +1830,35 @@ document.addEventListener('keydown', e=>{
   if(e.key!=='Escape') return;
   if(!$('splitModal').hidden) closeSplitModal();
   if(!$('loginModal').hidden) closeLoginModal();
+  { const ov=document.getElementById('appOverlay'); if(ov && !ov.hidden) closeAppPreview(); }
 });
+
+// ---- App preview: show this exact prototype inside a phone mockup at 380px ----
+let APP_BASE_HTML = '';
+function openAppPreview(){
+  let ov = document.getElementById('appOverlay');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'appOverlay'; ov.className = 'app-overlay'; ov.hidden = true;
+    ov.innerHTML = '<div class="app-bar"><span>App preview &middot; 380px</span>'
+      + '<button class="app-close" aria-label="Close preview"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 4 L16 16 M16 4 L4 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div>'
+      + '<div class="device"><div class="device-screen"><iframe class="device-frame" title="Mobile app preview"></iframe></div></div>';
+    document.body.appendChild(ov);
+    ov.addEventListener('click', e=>{ if(e.target===ov) closeAppPreview(); });
+    ov.querySelector('.app-close').addEventListener('click', closeAppPreview);
+  }
+  ov.querySelector('.device-frame').srcdoc = APP_BASE_HTML;
+  ov.hidden = false;
+}
+function closeAppPreview(){ const ov=document.getElementById('appOverlay'); if(ov){ ov.hidden=true; const f=ov.querySelector('.device-frame'); if(f) f.srcdoc=''; } }
+$('fabApp').onclick = openAppPreview;
 
 renderAll();
 refreshUndo();
+
+// Snapshot the fully-rendered page for the phone preview (hide the proto toolbar inside it)
+APP_BASE_HTML = ('<!DOCTYPE html>\n' + document.documentElement.outerHTML)
+  .replace('</head>', '<style>.proto-tools{display:none!important}header,.titlebar{display:none!important}.app-topbar{display:flex!important}</style></head>');
 
 // Tuck the sticky checkout bar once the real Order Summary scrolls into view
 (function(){
