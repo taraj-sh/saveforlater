@@ -1720,8 +1720,7 @@ function removeSaved(id){
   const i = saved.findIndex(p=>p.id===id);
   if(i<0) return;
   const [item]=saved.splice(i,1);
-  renderAll();
-  toast(`Removed from saved items`, ()=>{ saved.splice(i,0,item); renderAll(); });
+  renderAll();   // no toast when removing from Save for Later
 }
 
 function setQty(id,val){
