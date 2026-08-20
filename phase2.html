@@ -495,6 +495,10 @@
     #splitModal .modal{ max-width:none; width:100%; }
     #splitModal .modal-foot{ flex-direction:row; align-items:center; gap:20px; }
     #splitModal .modal-save{ flex:1; width:auto; }
+    /* App view only: Save for Later (173px, 13px) on the right; Cancel centered in the space to its left */
+    .app-preview #splitModal .modal-foot{ flex-direction:row-reverse; gap:12px; }
+    .app-preview #splitModal .modal-save{ flex:0 0 173px; width:173px; font-size:13px; }
+    .app-preview #splitModal .modal-cancel{ flex:1; text-align:center; }
   }
 
   /* ---- Login / register gate (Figma 915:15061) ---- */
@@ -1852,7 +1856,7 @@ refreshUndo();
 
 // Snapshot the fully-rendered page for the phone preview (hide the proto toolbar inside it)
 APP_BASE_HTML = ('<!DOCTYPE html>\n' + document.documentElement.outerHTML)
-  .replace('</head>', '<style>.proto-tools{display:none!important}header,.titlebar{display:none!important}.app-topbar{display:flex!important}</style></head>');
+  .replace('</head>', '<style>.proto-tools{display:none!important}header,.titlebar{display:none!important}.app-topbar{display:flex!important}</style><script>document.documentElement.classList.add("app-preview")<\/script></head>');
 
 // Tuck the sticky checkout bar once the real Order Summary scrolls into view
 (function(){
