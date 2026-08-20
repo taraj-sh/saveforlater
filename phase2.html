@@ -1019,13 +1019,8 @@ const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;
 /* ---------- toast ---------- */
 let toastTimer, undoFn=null;
 function toast(msg, undo){
-  $('toastMsg').textContent = msg;
-  const btn = $('toastUndo');
-  undoFn = undo || null;
-  btn.style.display = undo ? 'inline' : 'none';
-  $('toast').classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>$('toast').classList.remove('show'), 4000);
+  // Toast/snackbar confirmations are disabled — no on-screen "Removed / Cart cleared" popups.
+  undoFn = undo || null;   // keep undo available via the toolbar Undo control
   refreshUndo();
 }
 function refreshUndo(){ const b=$('fabUndo'); if(b) b.disabled = !undoFn; }
