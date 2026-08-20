@@ -294,12 +294,13 @@
                          letter-spacing:.02em; text-transform:uppercase; line-height:1; cursor:pointer;
                          transition:background .12s ease; }
   .slinks .movecart-btn:hover{ background:#EFF5FD; }
-  .slinks .movecart-btn:disabled{ background:var(--white); border-color:var(--border); color:#B0B0B0; cursor:default; }
-  .slinks .movecart-btn:disabled:hover{ background:var(--white); }
+  .slinks .movecart-btn:disabled{ background:#F5F5F5; border:1px solid #DCDCDC; color:#B4B4B4; cursor:default; }
+  .slinks .movecart-btn:disabled:hover{ background:#F5F5F5; }
   .unavail-note{ font-size:12px; font-weight:700; color:var(--muted); margin-top:8px; }
   .unavail-note.zip-note{ font-weight:400; color:var(--text); }
-  /* tighter gap between the "Not available for {zip}" copy and the disabled Move to Cart button — this tile only */
-  .scard.zip-unavail{ row-gap:6px; }
+  /* "Not available for {zip}" gets its own grid row so it can sit under the info (desktop) or below the price (mobile) */
+  .scard > .avail-line{ grid-area:avail; margin-top:0; align-self:start; }
+  .scard.zip-unavail{ grid-template-areas:"thumb info price" "thumb avail price" "thumb move price"; row-gap:6px; }
   /* volume-discount treatments in the saved tray (read-only, no steppers) */
   /* Stock Up & Save — fieldset box with legends cutting the border (matches cart) */
   .su-box{ position:relative; display:flex; justify-content:space-between; gap:20px;
@@ -652,6 +653,8 @@
     .scard{ grid-template-columns:auto minmax(0,1fr);
             grid-template-areas:"thumb info" "price price" "move move";
             row-gap:12px; column-gap:16px; padding:44px 16px 18px; }
+    /* unavailable tile: note drops below the price, above the full-width disabled button (Figma 1455:26599) */
+    .scard.zip-unavail{ grid-template-areas:"thumb info" "price price" "avail avail" "move move"; row-gap:8px; }
     .scard > .thumb{ align-self:start; }
     .scard > .sprice{ justify-self:start; align-items:flex-start; text-align:left; }
     .scard > .slinks{ justify-self:stretch; }
@@ -1374,7 +1377,7 @@ function renderSaved(){
       <div class="pinfo">
         <div class="pname"><a href="#">${esc(p.name)}</a></div>
         ${metaLine(p)}
-        ${!p.available?`<div class="unavail-note">No longer available</div>`:(p.zipUnavail?`<div class="unavail-note zip-note">Not available for <b>${SHIP_ZIP}</b></div>`:'')}
+        ${!p.available?`<div class="unavail-note">No longer available</div>`:''}
       </div>
       <div class="sprice">
         ${!p.available
@@ -1388,6 +1391,7 @@ function renderSaved(){
             ? `<button class="movecart-btn" disabled aria-disabled="true">Move to Cart</button>`
             : `<button class="movecart-btn" data-act="tocart" data-id="${p.id}">Move to Cart</button>`)}
       </div>
+      ${p.zipUnavail?`<div class="unavail-note zip-note avail-line">Not available for <b>${SHIP_ZIP}</b></div>`:''}
       <button class="strash" data-act="sremove" data-id="${p.id}" aria-label="Remove saved item"><span class="ico">delete</span></button>
     </div>`;
   }).join('');
